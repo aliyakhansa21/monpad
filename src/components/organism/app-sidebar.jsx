@@ -1,6 +1,6 @@
 "use client"
 import { Search, LogOut, Menu, ChevronLeft, Home } from "lucide-react"
-import { Input } from "@/components/ui/input";
+import  Input  from "@/components/ui/input";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; 
@@ -8,7 +8,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export function AppSidebar({ isExpanded, onToggle }) { 
   const pathname = usePathname();
   
-  // lebarnya penuh saat isExpanded atau kecil saat collapsed
   const sidebarWidthClass = isExpanded ? "w-sidebar-width" : "w-[72px]";
 
   const items = [
@@ -23,9 +22,7 @@ export function AppSidebar({ isExpanded, onToggle }) {
   ]
 
   return (
-    // animation
     <div className={`${sidebarWidthClass} bg-dark-purple text-white flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
-      {/* HEADER: MONPAD & TOGGLE */}
       <div className={`flex items-center p-6 mb-4 ${isExpanded ? "justify-between" : "justify-center"}`}>
         {isExpanded && <h1 className="text-4xl font-bold ">MonPAD</h1>}
         <button 
@@ -37,7 +34,6 @@ export function AppSidebar({ isExpanded, onToggle }) {
         </button>
       </div>
 
-      {/* SEARCH BAR: hanya tampil saat isExpanded */}
       {isExpanded && (
         <div className="relative mx-4 mb-4">
           <Input 
@@ -51,7 +47,6 @@ export function AppSidebar({ isExpanded, onToggle }) {
 
       <nav className={`flex-1 overflow-y-auto px-4 space-y-2 ${!isExpanded && 'hidden'}`}>
         <Accordion type="single" collapsible className="w-full">
-          {/* accordion untuk menu */}
           <AccordionItem value="menu" className="border-none">
             <AccordionTrigger className="text-white hover:no-underline font-medium">Menu</AccordionTrigger>
             <AccordionContent>
@@ -68,8 +63,6 @@ export function AppSidebar({ isExpanded, onToggle }) {
               ))}
             </AccordionContent>
           </AccordionItem>
-
-          {/* accordion untuk akun */}
           <AccordionItem value="account" className="border-none">
             <AccordionTrigger className="text-white hover:no-underline font-medium">Akun</AccordionTrigger>
             <AccordionContent>
@@ -81,22 +74,26 @@ export function AppSidebar({ isExpanded, onToggle }) {
         </Accordion>
       </nav>
 
-      {/* info user, hanya tampil saat isExpanded */}
       {isExpanded && (
         <div className="p-4 border-t border-indigo-700 mt-auto flex items-center justify-between">
           <div>
             <p className="font-semibold text-sm">Nama Dosen</p>
             <p className="text-xs text-gray-400">Dosen</p>
           </div>
-          <LogOut className="h-5 w-5 text-gray-400 cursor-pointer hover:text-white" />
+            <button aria-label="Log Out" className="p-1 rounded-full hover:bg-white/10 transition-colors">
+              <LogOut className="h-5 w-5 text-gray-400 cursor-pointer hover:text-white" />
+            </button>
         </div>
       )}
       
-      {/* jika collapsed, menampilkan logo kecil di bawah */}
       {!isExpanded && (
         <div className="flex flex-col items-center justify-center p-2 space-y-4 mt-auto mb-4">
-            <Home className="h-6 w-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
-            <LogOut className="h-6 w-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+            <button aria-label="Beranda" className="p-1 rounded-full hover:bg-white/10 transition-colors">
+              <Home className="h-6 w-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+            </button>
+            <button aria-label="Log Out" className="p-1 rounded-full hover:bg-white/10 transition-colors">
+              <LogOut className="h-6 w-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+            </button>
         </div>
       )}
     </div>

@@ -2,15 +2,15 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       spacing: {
-        'sidebar-width': '411px', 
+        'sidebar-width': '300px', 
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -72,7 +72,22 @@ module.exports = {
         'light-purple': '#8E5CB9',
         indigo: {
           900: '#52357B', 
-        }
+        },
+        'primary': '#52357B',
+        'secondary': '#648DB3',
+        'background-dark': '#291B3E',
+        'background-light': '#EEEBF2',
+        'text-on-dark': '#FFFFFF',
+        'text-on-light': '#000000',
+        'border-color': '#52357B',
+        'colomn-1': '#F4ECFF',
+        'colomn-2': '#FFFFFF',
+        'hover-light': '#EDEDED',
+        'hover-dark': '#52357B',
+        'danger': '#BC0006',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {

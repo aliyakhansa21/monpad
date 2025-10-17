@@ -1,5 +1,5 @@
 
-import Sidebar from './app-sidebar';
+import Sidebar from './organism/app-sidebar';
 
 const PageLayout = ({ children }) => {
 const mainContentMargin = 'w-[calc(100%-250px)]'; 
