@@ -9,10 +9,10 @@ import { Label } from '@/components/ui/label';
 const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
     const [formData, setFormData] = useState({
         id: '',
-        nama: '',
+        name: '',
         email: '',
         password: '',
-        konfirmasiPassword: '',
+        password_confirmation: '',
         nim: '',
         angkatan: '',
         prodi: '',
@@ -23,10 +23,10 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
         if (mode === 'edit' && initialData) {
             setFormData({
                 id: initialData.id,
-                nama: initialData.nama || '',
+                name: initialData.nama || '',
                 email: initialData.email || '',
                 password: '',
-                konfirmasiPassword: '',
+                password_confirmation: '',
                 nim: initialData.nim || '',
                 angkatan: initialData.angkatan || '',
                 prodi: initialData.prodi || '',
@@ -35,10 +35,10 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
         } else {
             setFormData({
                 id: '',
-                nama: '',
+                name: '',
                 email: '',
                 password: '',
-                konfirmasiPassword: '',
+                password_confirmation: '',
                 nim: '',
                 angkatan: '',
                 prodi: '',
@@ -57,14 +57,19 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (mode === 'add' && formData.password !== formData.konfirmasiPassword) {
+        if (mode === 'add' && formData.password !== formData.password_confirmation) {
             alert("Password dan Konfirmasi Password tidak sama!");
             return;
         }
-        const dataToSubmit = { ...formData };
+        const dataToSubmit = { 
+        ...formData, 
+        // Mapping kunci FE (konfirmasiPassword) ke kunci BE (password_confirmation)
+        password_confirmation: formData.password_confirmation
+        };
+        
         if (mode === 'edit') {
             delete dataToSubmit.password;
-            delete dataToSubmit.konfirmasiPassword;
+            delete dataToSubmit.password_confirmation;
         }
         onSubmit(dataToSubmit);
         onClose();
@@ -83,13 +88,24 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="nama" className="md:text-center">Nama</Label>
                             <div className="md:col-span-3">
-                                <Input id="nama" name="nama" value={formData.nama} onChange={handleChange} required />
+                                <Input 
+                                id="nama" 
+                                name="name" 
+                                value={formData.name} 
+                                onChange={handleChange} 
+                                required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="email" className="md:text-center">Email</Label>
                             <div className="md:col-span-3">
-                                <Input id="email" name="email" value={formData.email} onChange={handleChange} type="email" required />
+                                <Input 
+                                id="email" 
+                                name="email" 
+                                value={formData.email} 
+                                onChange={handleChange} 
+                                type="email" 
+                                required />
                             </div>
                         </div>
                         {mode === 'add' && (
@@ -97,13 +113,25 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                                     <Label htmlFor="password" className="md:text-center">Password</Label>
                                     <div className="md:col-span-3">
-                                        <Input id="password" name="password" value={formData.password} onChange={handleChange} type="password" required />
+                                        <Input 
+                                        id="password" 
+                                        name="password" 
+                                        value={formData.password} 
+                                        onChange={handleChange} 
+                                        type="password" 
+                                        required />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                                     <Label htmlFor="konfirmasiPassword" className="md:text-center">Konfirmasi Password</Label>
                                     <div className="md:col-span-3">
-                                        <Input id="konfirmasiPassword" name="konfirmasiPassword" value={formData.konfirmasiPassword} onChange={handleChange} type="password" required />
+                                        <Input 
+                                        id="konfirmasiPassword" 
+                                        name="password_confirmation" 
+                                        value={formData.konfirmasiPassword} 
+                                        onChange={handleChange} 
+                                        type="password" 
+                                        required />
                                     </div>
                                 </div>
                             </>
@@ -111,19 +139,34 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="nim" className="md:text-center">NIM</Label>
                             <div className='md:col-span-3'>
-                                <Input id="nim" name="nim" value={formData.nim} onChange={handleChange} required />
+                                <Input 
+                                id="nim" 
+                                name="nim" 
+                                value={formData.nim} 
+                                onChange={handleChange} 
+                                required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="angkatan" className="md:text-center">Angkatan</Label>
                             <div className="md:col-span-3">
-                                <Input id="angkatan" name="angkatan" value={formData.angkatan} onChange={handleChange} required />
+                                <Input 
+                                id="angkatan" 
+                                name="angkatan" 
+                                value={formData.angkatan} 
+                                onChange={handleChange} 
+                                required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="prodi" className="md:text-center">Program Studi</Label>
                             <div className='md:col-span-3'>
-                                <Input id="prodi" name="prodi" value={formData.prodi} onChange={handleChange} required />
+                                <Input 
+                                id="prodi" 
+                                name="prodi" 
+                                value={formData.prodi} 
+                                onChange={handleChange} 
+                                required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">

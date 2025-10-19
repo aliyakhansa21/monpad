@@ -49,7 +49,11 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
                     <tbody className="bg-white divide-y divide-gray-200">
                         {data.map((item, index) => (
                             <tr key={item.id} className={index % 2 === 1 ? 'bg-background-light' : ''}>
-                                {columns.map(column => renderCell(item, column))}
+                                {columns.map(column => (
+                                    <React.Fragment key={column.key}>
+                                        {renderCell(item, column)}
+                                    </React.Fragment>
+                                ))}
                             </tr>
                         ))}
                     </tbody>
