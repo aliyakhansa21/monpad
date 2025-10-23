@@ -11,10 +11,10 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
             return (
                 <td className="px-3 py-4 md:px-6 md:py-4 flex items-center space-x-2 justify-center">
                     <Button variant="icon-only-2" aria-label="Edit Data" onClick={() => onEdit(item)}>
-                        <Icon name="edit-green" size={35} />
+                        <Icon name="edit-green" size={30} />
                     </Button>
                     <Button variant="icon-only-2" aria-label="Hapus Data" onClick={() => onDelete(item)}>
-                        <Icon name="remove-red" size={35} />
+                        <Icon name="remove-red" size={30} />
                     </Button>
                 </td>
             );
@@ -24,13 +24,10 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">
-                <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto">
+            <div className="flex flex-col justify-end mb-4 space-y-2 md:space-y-0">
+                <div className="flex items-center space-x-2 md:space-x-4 md:w-auto justify-end">
                     <Button onClick={onAdd} variant="icon-only-2" aria-label="Tambah Data">
                         <Icon name="filled-plus" size={45} />
-                        {/* <Icon name="plus-square" size={20} className="mr-2" />
-                        <span className="hidden md:inline">Tambah</span>
-                        <span className="md:hidden">Tambah</span> */}
                     </Button>
                     <SearchInput placeholder="Search" onChange={onSearch} />
                 </div>

@@ -1,35 +1,47 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { CircleArrowUp, Trash2, SquarePlus } from 'lucide-react';
 
-const iconUrls = {
-    'remove-red': 'https://img.icons8.com/ios-glyphs/30/bc0006/delete-forever.png',
-    'edit-green': 'https://img.icons8.com/ios-glyphs/30/176f2b/buy-upgrade.png',
-    'filled-plus': 'https://img.icons8.com/ios-glyphs/30/52357b/filled-plus-2-math.png',
+const colorMap = {
+    'red': '#BC0006',
+    'green': '#176F2B',
+    'primary': '#52357B',
 };
 
-const Icon = ({ name, size = 35, alt = 'icon', ...props }) => {
-    const iconUrl = iconUrls[name];
+const LucideIconMap = {
+    'edit-green': { component: CircleArrowUp, color: 'green' },
+    'remove-red': { component: Trash2, color: 'red' },
+    'filled-plus': { component: SquarePlus, color: 'primary' }, 
+};
 
-    if (!iconUrl) {
+const Icon = ({ name, size, className }) => {
+    const iconData = LucideIconMap[name];
+
+    if (!iconData) {
+        console.warn(`Icon "${name}" not found in LucideIconMap.`);
         return null;
     }
 
+    const LucideComponent = iconData.component;
+    const iconColor = colorMap[iconData.color] || colorMap['default']; 
+
     return (
-        <img
-            src={iconUrl}
-            alt={alt}
-            width={size}
-            height={size}
-            style={{ width: size, height: size }}
-            {...props}
+        <LucideComponent
+            size={size}
+            style={{ color: iconColor }} 
+            className={className} 
         />
     );
 };
 
 Icon.propTypes = {
-    name: PropTypes.oneOf(Object.keys(iconUrls)).isRequired,
+    name: PropTypes.string.isRequired,
     size: PropTypes.number,
-    alt: PropTypes.string,
+    className: PropTypes.string,
+};
+
+Icon.defaultProps = {
+    size: 24, 
 };
 
 export default Icon;
