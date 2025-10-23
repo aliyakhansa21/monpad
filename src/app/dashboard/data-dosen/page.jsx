@@ -2,12 +2,12 @@
 import { AppSidebar } from "@/components/organism/app-sidebar";
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/organism/DashboardHeader";
-import DataTable from "@/components/DataTable";
+import DataTable from "@/components/organism/DataTable";
 import Footer from "@/components/organism/Footer";
 import DosenModal from "@/components/organism/DosenModal";
 
 const DOSEN_COLUMNS = [
-    { key:'nama', label: 'Nama'},
+    { key:'username', label: 'Nama'},
     { key:'email', label: 'Email'},
     { key:'nidn', label:'NIDN'},
     { key:'fakultas', label:'Fakultas'},
@@ -27,9 +27,9 @@ export default function DataDosenPage() {
     const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
 
     const fetchDosenData = async () => {
-        setIsLoading(trus);
+        setIsLoading(true);
         try {
-            const response = await fetch(`${LARAVEL_API_BASE_URL}/asisten`);
+            const response = await fetch(`${LARAVEL_API_BASE_URL}/dosen`);
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -37,12 +37,12 @@ export default function DataDosenPage() {
             }
 
             const result = await response.json();
-            setAsistenData(result.data);
+            setDosenData(result.data);
         } catch (error) {
             // console.error("Gagal mengambil data: ", error);
             console.error("Error saat menambahkan data:", error);
             alert("Gagal memuat data: ${error.message}");
-            setAsistenData([]);
+            setDosenData([]);
         } finally {
             setIsLoading(false);
         }
@@ -99,11 +99,11 @@ export default function DataDosenPage() {
     const handleModalSubmit = async (formData) => {
         if (modalMode === 'add') {
             try {
-                const response = await fetch (`${LARAVEL_API_BASE_URL}/asisten`, {
+                const response = await fetch (`${LARAVEL_API_BASE_URL}/dosen`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application.json',
-                        'Accept': 'application.json',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify(formData),
                 });

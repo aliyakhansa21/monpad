@@ -6,7 +6,7 @@ import Input from '@/components/atoms/Input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
-const AsistenModal = ({ isOpen, onClose, onSubmit, initialData, mode}) => {
+const DosenModal = ({ isOpen, onClose, onSubmit, initialData, mode}) => {
     const [formData, setFormData] = useState ({
         id:'',
         name:'',
@@ -166,7 +166,7 @@ const AsistenModal = ({ isOpen, onClose, onSubmit, initialData, mode}) => {
     );
 };
 
-AsistenModal.PropTypes = {
+DosenModal.PropTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
