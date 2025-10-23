@@ -9,7 +9,7 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
     const renderCell = (item, column) => {
         if (column.key === 'actions') {
             return (
-                <td className="px-3 py-4 md:px-6 md:py-4 flex items-center space-x-2">
+                <td className="px-3 py-4 md:px-6 md:py-4 flex items-center space-x-2 justify-center">
                     <Button variant="icon-only-2" aria-label="Edit Data" onClick={() => onEdit(item)}>
                         <Icon name="edit-green" size={35} />
                     </Button>
@@ -19,7 +19,7 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
                 </td>
             );
         }
-        return <td className="px-3 py-4 md:px-6 md:py-4">{item[column.key]}</td>;
+        return <td className="px-3 py-4 md:px-6 md:py-4 text-center">{item[column.key]}</td>;
     };
 
     return (

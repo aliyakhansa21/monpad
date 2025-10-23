@@ -14,17 +14,19 @@ const AsistenModal = ({ isOpen, onClose, onSubmit, initialData, mode}) => {
         password:'',
         password_confirmation:'',
         tahun_ajaran:'',
+        nim:'',
     });
 
     useEffect(() => {
         if (mode === 'edit' && initialData) {
             setFormData({
                 id: initialData.id,
-                name: initialData.nama || '',
+                name: initialData.name || '',
                 email: initialData.email || '',
                 password: '',
                 password_confirmation: '',
                 tahun_ajaran: '',
+                nim:'',
             });
         } else {
             setFormData({
@@ -34,6 +36,7 @@ const AsistenModal = ({ isOpen, onClose, onSubmit, initialData, mode}) => {
                 password: '',
                 password_confirmation: '',
                 tahun_ajaran: '',
+                nim:'',
             });
         }
     }, [mode, initialData]);
@@ -138,6 +141,18 @@ const AsistenModal = ({ isOpen, onClose, onSubmit, initialData, mode}) => {
                                 onChange={handleChange}
                                 required
                                 />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="nim" className="md:text-center">NIM</Label>
+                            <div className="md:col-span-3">
+                                <Input 
+                                id="nim" 
+                                name="nim" 
+                                value={formData.nim} 
+                                onChange={handleChange} 
+                                type="nim" 
+                                required />
                             </div>
                         </div>
                     </div>
