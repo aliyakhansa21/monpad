@@ -12,9 +12,9 @@ export function AppSidebar({ isExpanded, onToggle }) {
 
   const items = [
     {title: "Beranda", href: "/"},
-    {title: "Data Dosen", href: "/data-dosen"},
-    {title: "Data Asisten", href: "/data-asisten"},
-    {title: "Data Mahasiswa", href: "/data-mahasiswa"},
+    {title: "Data Dosen", href: "/dashboard/data-dosen"},
+    {title: "Data Asisten", href: "/dashboard/data-asisten"},
+    {title: "Data Mahasiswa", href: "/dashboard/data-mahasiswa"},
     {title: "Nilai Individu Mahasiswa", href: "/nilai-individu-mahasiswa"},
     {title: "Proyek & Kelompok", href: "/proyek-dan-kelompok"},
     {title: "Matriks Nilai", href: "/matriks-nilai"},    
@@ -44,33 +44,27 @@ export function AppSidebar({ isExpanded, onToggle }) {
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 text-gray-400" />
         </div>
       )}
+      <nav className={`flex-1 overflow-y-auto px-4 space-y-2 ${!isExpanded && 'hidden'}`}>         
+        {items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`block py-2 rounded-md transition-colors pl-[48px] pr-2 ${
+            pathname === item.href ? "bg-white text-indigo-950 font-semibold" : "text-gray-200 hover:bg-dark-purple/80"
+            }`}>
+            {item.title}
+          </Link>
+        ))}
 
-      <nav className={`flex-1 overflow-y-auto px-4 space-y-2 ${!isExpanded && 'hidden'}`}>
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="menu" className="border-none">
-            <AccordionTrigger className="text-white hover:no-underline font-medium">Menu</AccordionTrigger>
-            <AccordionContent>
-              {items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`block py-2 pl-4 rounded-md transition-colors ${
-                    pathname === item.href ? "bg-white text-indigo-950 font-semibold" : "text-gray-200 hover:bg-dark-purple/80"
-                  }`}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </AccordionContent>
-          </AccordionItem>
           <AccordionItem value="account" className="border-none">
             <AccordionTrigger className="text-white hover:no-underline font-medium">Akun</AccordionTrigger>
-            <AccordionContent>
-              <Link href="#" className="block py-2 pl-4 text-gray-200 hover:bg-dark-purple/80 rounded-md">
-                Log Out
-              </Link>
-            </AccordionContent>
-          </AccordionItem>
+              <AccordionContent>
+                <Link href="#" className="block py-2 pl-4 text-gray-200 hover:bg-dark-purple/80 rounded-md">
+                  Log Out
+                </Link>
+              </AccordionContent>
+            </AccordionItem>
         </Accordion>
       </nav>
 

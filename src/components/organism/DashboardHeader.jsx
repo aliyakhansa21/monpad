@@ -15,7 +15,6 @@ const DashboardHeader = ({ title }) => {
             p-6 md:p-6 w-full">
                 <div className='flex flex-col'>
                     <h1 className='text-xl md:text-3xl font-bold text-primary leading-tight'>{title}</h1>
-                    <p className='text-xs md:text-sm text-gray-500'>Menu &gt; {title}</p>
                 </div>
                 <div className='flex items-center space-x-2 mt-2 md:mt-0'>
                     <Button variant="ghost" aria-label="Notifikasi" className="p-1 md:p-2 rounded-lg hover:bg-gray-100 transition-colors">
