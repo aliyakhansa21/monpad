@@ -7,7 +7,7 @@ const buttonStyles = {
     ghost: 'bg-transparent text-gray-600 hover:bg-gray-50 p-1.5',
     icon: 'p-2 rounded-full text-indigo-600 hover:bg-indigo-100',
     'icon-only-1': 'bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700',
-    'icon-only-2': 'bg-transparent p-1.5 rounded-md inline-flex items-center justify-center', 
+    'icon-only-2': 'bg-transparent p-0.5 rounded-md inline-flex items-center justify-center', 
     secondary: 'bg-secondary text-gray-700 border border-gray-300 hover:bg-secondary-50 px-6 py-2',
 };
 

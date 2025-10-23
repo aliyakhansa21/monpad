@@ -7,10 +7,10 @@ import Footer from "@/components/organism/Footer";
 import AsistenModal from "@/components/organism/AsistenModal";
 
 const ASISTEN_COLUMNS = [
-    { key:'nama', label: 'Nama' },
+    { key:'username', label: 'Nama' },
     { key:'email', label: 'Email'},
-    { key: 'tahunajaran', label: 'TahunAjaran' },
-    // { key: 'nim', lebel: 'NIM' },
+    { key: 'tahun_ajaran', label: 'TahunAjaran' },
+    { key: 'nim', label: 'NIM' },
     { key: 'actions', label: 'Aksi' },
 ];
 
@@ -124,8 +124,19 @@ export default function DataAsistenPage() {
 
                 alert("Data berhasil ditambahkan!");
             } catch (error) {
-                console.error("Error saat menambahkan data:". error);
-                alert("Gagal menambahkan data: ${error.message}");
+                console.error('Error saat menambahkan data:', error);
+                
+                // Asumsi Anda menggunakan Fetch API atau library serupa:
+                let errorMessage = "Terjadi kesalahan yang tidak diketahui.";
+
+                // Cek apakah error adalah objek Response dari fetch (jika menggunakan fetch)
+                if (error && error.status === 500) {
+                    errorMessage = "Kesalahan Server Internal (500). Mohon hubungi tim Backend.";
+                } else if (error && error.message) {
+                    errorMessage = error.message;
+                }
+
+                alert(`Gagal menambahkan data: ${errorMessage}`);
             }
         } else {
             alert("Data berhasil diperbarui!");
