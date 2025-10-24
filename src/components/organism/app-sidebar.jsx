@@ -16,7 +16,7 @@ export function AppSidebar({ isExpanded, onToggle }) {
     {title: "Data Asisten", href: "/dashboard/data-asisten"},
     {title: "Data Mahasiswa", href: "/dashboard/data-mahasiswa"},
     {title: "Nilai Individu Mahasiswa", href: "/nilai-individu-mahasiswa"},
-    {title: "Proyek & Kelompok", href: "/proyek-dan-kelompok"},
+    {title: "Proyek & Kelompok", href: "/dashboard/data-proyek"},
     {title: "Matriks Nilai", href: "/matriks-nilai"},    
     {title: "Laporan Progres", href: "/laporan-progres"},
   ]
