@@ -5,6 +5,11 @@ import Button from '@/components/atoms/Button';
 import Icon from '@/components/atoms/Icon';
 import Pagination from '@/components/molecules/Pagination';
 
+const getNestedValue = (obj, path) => {
+    // path bisa berupa 'owner.username' atau 'nama_proyek'
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
+
 const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, onPageChange, onEdit, onDelete }) => {
     const renderCell = (item, column) => {
         if (column.key === 'actions') {
@@ -19,6 +24,7 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
                 </td>
             );
         }
+        const value = getNestedValue(item, column.key);
         return <td className="px-3 py-4 md:px-6 md:py-4 text-center">{item[column.key]}</td>;
     };
 
