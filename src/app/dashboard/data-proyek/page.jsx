@@ -10,17 +10,18 @@ const PROJECT_COLUMNS = [
     { key: 'nama_proyek', label: 'Nama Proyek' },
     { key: 'semester', label: 'Semester' },
     { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
-    // Menggunakan fungsi render khusus untuk data bersarang (owner)
     { 
         key: 'owner.username', 
         label: 'Owner (Dosen)',
         render: (item) => item.owner ? item.owner.username : 'N/A' 
     },
-    // Menggunakan fungsi render untuk array (asisten)
     { 
         key: 'asisten', 
         label: 'Asisten',
-        render: (item) => item.asisten ? item.asisten.map(a => a.username).join(', ') : 'Tidak Ada'
+        render: (item) => 
+            Array.isArray(item.asisten) 
+            ? item.asisten.map(a => a.username).join(', ') 
+            : 'Tidak Ada'
     },
     { key: 'actions', label:'Aksi' },
 ];
@@ -155,15 +156,14 @@ export default function DataProjectPage() {
 
     const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]" ;
     
-    // Peningkatan: Pastikan data ditampilkan bahkan jika ada properti bersarang
-    // menggunakan memoization untuk menghindari perhitungan berulang
     const processedData = useMemo(() => {
         return projectData.map(project => ({
             ...project,
-            // Membuat properti datar untuk kemudahan akses di kolom
             'owner.username': project.owner ? project.owner.username : 'N/A',
-            // Menggabungkan nama asisten untuk tampilan tabel
-            asisten_names: project.asisten ? project.asisten.map(a => a.username).join(', ') : 'Tidak Ada',
+            
+            asisten_names: Array.isArray(project.asisten) 
+                        ? project.asisten.map(a => a.username).join(', ') 
+                        : 'Tidak Ada',
         }));
     }, [projectData]);
 
@@ -184,7 +184,7 @@ export default function DataProjectPage() {
                         <main className="p-4">
                             {isLoading ? (
                                 <div className="flex justify-center items-center h-64">
-                                    <p className="ml-2 text-gray-600">Memuat Data...</p>
+                                    {/* <p className="ml-2 text-gray-600">Memuat Data...</p> */}
                                 </div>
                             ) : (
                                 <DataTable
@@ -212,8 +212,6 @@ export default function DataProjectPage() {
                 onSubmit={handleModalSubmit}
                 initialData={selectedProject}
                 mode={modalMode}
-                // Anda perlu menambahkan props untuk data Dosen dan Asisten
-                // agar form modal bisa memilih dari daftar (jika belum ada)
                 // dosenList={[]} 
                 // asistenList={[]}
             />

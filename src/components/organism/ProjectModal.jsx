@@ -59,7 +59,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[960px] md:max-w-xl lg:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle className="text-center text-indigo-700 font-bold text-3xl">
+                    <DialogTitle className="text-center text-primary font-bold text-3xl">
                         {mode === 'add' ? 'Tambah Proyek & Kelompok' : 'Perbarui Proyek & Kelompok'}
                     </DialogTitle>
                 </DialogHeader>
@@ -127,7 +127,6 @@ const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="owner_id" className="md:text-left">Project Owner (ID)</Label>
                             <div className="md:col-span-3">
-                                {/* Di dunia nyata ini SELECT Dosen */}
                                 <Input 
                                 id="owner_id"
                                 name="owner_id" 
@@ -143,7 +142,6 @@ const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="asisten_id" className="md:text-left">Asisten (ID)</Label>
                             <div className="md:col-span-3">
-                                {/* Di dunia nyata ini SELECT Asisten */}
                                 <Input
                                 id="asisten_id"
                                 name="asisten_id"
