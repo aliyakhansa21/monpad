@@ -7,7 +7,7 @@ import Footer from "@/components/organism/Footer";
 import ProjectModal from "@/components/organism/ProjectModal";
 
 const PROJECT_COLUMNS = [
-    { key: 'nama_proyek', label: 'Nama Proyek' },
+    { key: 'nama_projek', label: 'Nama Proyek' },
     { key: 'semester', label: 'Semester' },
     { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
     { 
@@ -18,12 +18,33 @@ const PROJECT_COLUMNS = [
     { 
         key: 'asisten', 
         label: 'Asisten',
-        render: (item) => 
-            Array.isArray(item.asisten) 
-            ? item.asisten.map(a => a.username).join(', ') 
-            : 'Tidak Ada'
+        render: (item) => {
+        // Ambil data asisten
+            const asistenData = item.asisten;
+
+            if (!asistenData) {
+                return 'Tidak Ada'; // Jika null atau undefined
+            }
+
+            if (Array.isArray(asistenData)) {
+                // KASUS 1: Jika ini adalah Array (koleksi/many-to-many)
+                if (asistenData.length === 0) {
+                    return 'Tidak Ada';
+                }
+                return asistenData.map(a => a.username).join(', ');
+                
+            } else if (typeof asistenData === 'object' && asistenData.username) {
+                // KASUS 2: Jika ini adalah Object tunggal (seperti yang muncul di console log Anda)
+                return asistenData.username; 
+                
+            } else {
+                return 'Tidak Ada';
+            }
+        }
     },
     { key: 'actions', label:'Aksi' },
+
+    
 ];
 
 export default function DataProjectPage() {
@@ -35,6 +56,8 @@ export default function DataProjectPage() {
     const [selectedProject, setSelectedProject] = useState(null);
     const [projectData, setProjectData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [dosenList, setDosenList] = useState([]);
+    const [asistenList, setAsistenList] = useState([]);
 
     const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
 
@@ -50,6 +73,7 @@ export default function DataProjectPage() {
             }
             
             const data = await response.json();
+            console.log('Data yang diterima dari API:', data);
             setProjectData(data.data || data); 
 
         } catch (error) {
@@ -60,9 +84,27 @@ export default function DataProjectPage() {
         }
     }, [searchTerm, currentPage]);
 
+    const fetchUserLists = useCallback(async () => {
+        try {
+            const [dosenRes, asistenRes] = await Promise.all([
+                fetch(`${LARAVEL_API_BASE_URL}/dosen`),
+                fetch(`${LARAVEL_API_BASE_URL}/asisten`),
+            ]);
+
+            const dosenData = await dosenRes.json();
+            const asistenData = await asistenRes.json();
+
+            setDosenList(dosenData.data || dosenData);
+            setAsistenList(asistenData.data || asistenData);
+        } catch (error) {
+            console.error("Error fetching user lists:", error);
+        }
+    }, []);
+
     useEffect(() => {
         fetchProjectData();
-    }, [fetchProjectData]);
+        fetchUserLists();
+    }, [fetchProjectData, fetchUserLists]);
 
 
     const toggleSidebar = () => {
@@ -212,8 +254,8 @@ export default function DataProjectPage() {
                 onSubmit={handleModalSubmit}
                 initialData={selectedProject}
                 mode={modalMode}
-                // dosenList={[]} 
-                // asistenList={[]}
+                dosenList={dosenList}
+                asistenList={asistenList}
             />
         </div>
     )

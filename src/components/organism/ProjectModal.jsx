@@ -5,8 +5,9 @@ import Button from '@/components/atoms/Button';
 import Input from '@/components/atoms/Input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import Select from 'react-select';
 
-const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
+const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode, dosenList, asistenList }) => {
     const [formData, setFormData] = useState({
         id: '',
         nama_projek: '', 
@@ -16,6 +17,14 @@ const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
         owner_id: '', 
         asisten_id: '',
     });
+
+    const mapUserToOption = (user) => ({
+        value: user.id,
+        label: user.username,
+    });
+
+    const ownerOptions = dosenList.map(mapUserToOption);
+    const asistenOptions = asistenList.map(mapUserToOption);
 
     useEffect(() => {
         if (mode === 'edit' && initialData) {
@@ -40,6 +49,17 @@ const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
             });
         }
     }, [mode, initialData]);
+
+    const handleSelectChange = (name, selectedOption) => {
+        setFormData(prevState => ({
+            ...prevState,
+            // [name]: selectedOption ? selectedOption.value : '',
+            [name]: selectedOption ? parseInt(selectedOption.value, 10) : '',
+        }));
+    };
+
+    const selectedOwner = ownerOptions.find(opt => opt.value === formData.owner_id) || null;
+    const selectedAsisten = asistenOptions.find(opt => opt.value === formData.asisten_id) || null;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -123,34 +143,40 @@ const ProjectModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
                                 />
                             </div>
                         </div>
-                        {/* Project Owner (Dosen ID) */}
+                        {/* Project Owner (Dosen ID) - pakai select dropdown*/}
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="owner_id" className="md:text-left">Project Owner (ID)</Label>
                             <div className="md:col-span-3">
-                                <Input 
+                                <Select 
                                 id="owner_id"
                                 name="owner_id" 
-                                type="number"
-                                value={formData.owner_id}
-                                onChange={handleChange}
-                                placeholder="ID Owner Dosen"
+                                options={ownerOptions}
+                                value={selectedOwner}
+                                onChange={(opt) => handleSelectChange('owner_id', opt)}
+                                placeholder="Pilih Owner Dosen"
+                                isClearable
+                                isSearchable
                                 required
                                 />
+                                <input type="hidden" name="owner_id" value={formData.owner_id} required />
                             </div>
                         </div>
                         {/* Asisten (Asisten ID) */}
                         <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
                             <Label htmlFor="asisten_id" className="md:text-left">Asisten (ID)</Label>
                             <div className="md:col-span-3">
-                                <Input
+                                <Select
                                 id="asisten_id"
                                 name="asisten_id"
-                                type="number"
-                                value={formData.asisten_id}
-                                onChange={handleChange}
-                                placeholder="ID Asisten"
+                                options={asistenOptions}
+                                value={selectedAsisten}
+                                onChange={(opt) => handleSelectChange('asisten_id', opt)}
+                                placeholder="Pilih Asisten"
+                                isClearable
+                                isSearchable
                                 required
                                 />
+                                <input type="hidden" name="asisten_id" value={formData.asisten_id} required />
                             </div>
                         </div>
                     </div>
@@ -170,6 +196,8 @@ ProjectModal.propTypes = {
     onSubmit: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     mode: PropTypes.string.isRequired,
+    dosenList:PropTypes.array.isRequired,
+    asistenList:PropTypes.array.isRequired,
 };
 
 export default ProjectModal;

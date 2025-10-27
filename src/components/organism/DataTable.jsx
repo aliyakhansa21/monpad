@@ -6,7 +6,6 @@ import Icon from '@/components/atoms/Icon';
 import Pagination from '@/components/molecules/Pagination';
 
 const getNestedValue = (obj, path) => {
-    // path bisa berupa 'owner.username' atau 'nama_proyek'
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
 };
 
@@ -16,7 +15,7 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
             return (
                 <td className="px-3 py-4 md:px-6 md:py-4 flex items-center space-x-2 justify-center">
                     <Button variant="icon-only-2" aria-label="Edit Data" onClick={() => onEdit(item)}>
-                        <Icon name="edit-green" size={30} />
+                        <Icon name="edit-green" size={30} /> 
                     </Button>
                     <Button variant="icon-only-2" aria-label="Hapus Data" onClick={() => onDelete(item)}>
                         <Icon name="remove-red" size={30} />
@@ -24,20 +23,37 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
                 </td>
             );
         }
-        const value = getNestedValue(item, column.key);
-        return <td className="px-3 py-4 md:px-6 md:py-4 text-center">{item[column.key]}</td>;
+
+        let value;
+
+        if (column.render) {
+            value = column.render(item);
+        } 
+        else if (column.key.includes('.')) {
+            value = getNestedValue(item, column.key);
+        }
+        else {
+            value = item[column.key];
+        }
+
+        if (typeof value === 'object' && value !== null) {
+            value = '— Data Objek —'; 
+        }
+
+        return <td className="px-3 py-4 md:px-6 md:py-4 text-center">{value || '-'}</td>; 
     };
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-            <div className="flex flex-col justify-end mb-4 space-y-2 md:space-y-0">
-                <div className="flex items-center space-x-2 md:space-x-4 md:w-auto justify-end">
+            <div className="flex flex-col md:flex-row justify-end items-center mb-4 space-y-2 md:space-y-0"> 
+                <div className="flex items-center space-x-2 md:space-x-4 md:w-auto"> 
                     <Button onClick={onAdd} variant="icon-only-2" aria-label="Tambah Data">
                         <Icon name="filled-plus" size={45} />
                     </Button>
-                    <SearchInput placeholder="Search" onChange={onSearch} />
+                    <SearchInput placeholder="Search" onChange={(e) => onSearch(e.target.value)} />
                 </div>
             </div>
+            
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -79,13 +95,13 @@ const DataTable = ({ data, columns, onSearch, onAdd, totalPages, currentPage, on
 DataTable.propTypes = {
     data: PropTypes.array.isRequired,
     columns: PropTypes.array.isRequired,
-    onSearch: PropTypes.func,
-    onAdd: PropTypes.func,
+    onSearch: PropTypes.func.isRequired,
+    onAdd: PropTypes.func.isRequired,
     totalPages: PropTypes.number,
     currentPage: PropTypes.number,
-    onPageChange: PropTypes.func,
-    onEdit: PropTypes.func,
-    onDelete: PropTypes.func,
+    onPageChange: PropTypes.func.isRequired,
+    onEdit: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired,
 };
 
 export default DataTable;
