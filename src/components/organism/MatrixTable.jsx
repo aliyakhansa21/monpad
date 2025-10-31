@@ -77,38 +77,43 @@ const MatrixTable = ({
                     <thead>
                         <tr>
                             {columns.slice(0, 2).map(col => (
-                                <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
+                                <th 
+                                    rowSpan={2} 
+                                    key={col.key} 
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                >
                                     {col.label}
                                 </th>
                             ))}
+                            
                             <th colSpan={dynamicHeaders.length} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider border-l border-r border-white/50">
                                 Penilaian
                             </th>
+                            
                             <th className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
                                 TOTAL SKOR
                             </th>
+                            
                             {columns.slice(2).map(col => ( 
-                                <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
+                                <th 
+                                    rowSpan={2} 
+                                    key={col.key} 
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                >
                                     {col.label}
                                 </th>
                             ))}
                         </tr>
                         
-                        <tr>
-                            <th colSpan={2} className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-medium text-gray-800 uppercase tracking-wider border-r border-gray-200"></th>
-                            
+                        <tr>                            
                             {dynamicHeaders.map(col => (
-                                <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-medium text-gray-800 uppercase tracking-wider border-r border-gray-200">
+                                <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider border-r border-gray-200">
                                     {col.label}
                                 </th>
-                            ))}
-                            
-                            <th className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-bold text-primary uppercase tracking-wider border-r border-gray-200">
+                            ))}                            
+                            <th className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-bold text-white tracking-wider border-r border-gray-200">
                                 {totalWeekWeight}%
-                            </th>
-                            
-                            <th colSpan={columns.slice(2).length - 1} className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-medium text-gray-800 uppercase tracking-wider border-r border-gray-200"></th>
-
+                            </th>                            
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
