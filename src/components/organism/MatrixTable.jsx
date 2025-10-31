@@ -87,7 +87,7 @@ const MatrixTable = ({
                             <th className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
                                 TOTAL SKOR
                             </th>
-                            {columns.slice(2).map(col => ( // Mulai dari 'Catatan' (index 2 di STATIC_COLUMNS yang baru)
+                            {columns.slice(2).map(col => ( 
                                 <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
                                     {col.label}
                                 </th>
