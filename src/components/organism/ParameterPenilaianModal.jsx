@@ -1,190 +1,307 @@
+// src/components/organism/ParameterPenilaianModal.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@/components/atoms/Button';
 import Icon from '@/components/atoms/Icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import Select from 'react-select';
+import Select from 'react-select'; 
+import Input from '@/components/atoms/Input'; 
 import { Slider } from '@/components/ui/slider';
-import AspekPenilaianModal from './AspekPenilaianModal';
 
 const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
 
-const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit }) => {
+
+const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes, totalWeekWeight }) => {
+    
     const [minggu, setMinggu] = useState(null);
     const [aspekList, setAspekList] = useState([]);
-    const [isAspekModalOpen, setIsAspekModalOpen] = useState(false);
-    const [editingAspek, setEditingAspek] = useState(null);
-
-    const bobotAspekTotal = useMemo(() => {
+    const [bobotMinggu, setBobotMinggu] = useState(0); 
+    const [newAspekInput, setNewAspekInput] = useState({ name: '', percentage: 0, id: null });
+        
+    const bobotAspekAkumulasi = useMemo(() => {
         return aspekList.reduce((sum, aspek) => sum + aspek.percentage, 0);
     }, [aspekList]); 
-    
-    const TARGET_BOBOT_MINGGU = 100;
 
     const mingguOptions = useMemo(() => Array.from({ length: 16 }, (_, i) => ({ 
         value: i + 1, 
         label: `Minggu ke-${i + 1}` 
     })), []);
 
-    const handleAddAspek = async (newAspek) => {
-        if (editingAspek) {
-            setAspekList(prev => prev.map(a => 
-                a.id === editingAspek.id ? { ...a, ...newAspek } : a
-            ));
-            setEditingAspek(null);
-            return; 
-        }
+    const aspekOptions = useMemo(() => existingGradeTypes.map(gt => ({
+        value: gt.id,
+        label: gt.name,
+    })), [existingGradeTypes]);
 
-        try {
-            const postedAspek = await postAspek(newAspek); 
-            
-            setAspekList(prev => [...prev, {
-                ...newAspek,
-                id: postedAspek.id, 
-                apiName: postedAspek.name,
-            }]);
-        } catch (error) {
+    const newTotalWeight = useMemo(() => {
+        return totalWeekWeight + bobotMinggu;
+    }, [totalWeekWeight, bobotMinggu]); 
+    
+    const maxSliderValue = 100 - totalWeekWeight > 0 ? 100 - totalWeekWeight : 0;
+    
+    
 
-        }
+    const handleSliderMingguChange = (value) => {
+        setBobotMinggu(value[0]);
     };
 
-    const handleRemoveAspek = (id) => {
-        setAspekList(prev => prev.filter(aspek => aspek.id !== id));
+    const handleSelectMingguChange = (selectedOption) => {
+        setMinggu(selectedOption);
+        // console.log('Minggu dipilih:', selectedOption); 
     };
 
-    const handleEditAspek = (aspek) => {
-        setEditingAspek(aspek);
-        setIsAspekModalOpen(true);
-    };
-
-    const postAspek = async (aspekData) => {
-        try {
-            const response = await fetch(`${LARAVEL_API_BASE_URL}/grade-type`, {
-                method: 'POST', 
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: aspekData.name,
-                    percentage: aspekData.percentage,
-                }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Gagal membuat Aspek baru: ${errorText.substring(0, 100)}...`);
-            }
-            
-            const data = await response.json();
-            return data.data; 
-        } catch (error) {
-            alert(`Error POST Aspek: ${error.message}`);
-            throw error; 
+    const handleAspectSelect = (selectedOption) => {
+        if (selectedOption) {
+            setNewAspekInput(prev => ({ 
+                ...prev, 
+                name: selectedOption.label, 
+                id: selectedOption.value 
+            }));
+        } else {
+            setNewAspekInput(prev => ({ 
+                ...prev, 
+                name: '', 
+                id: null 
+            }));
         }
-    }
+    };
+    
+    const handleAspectNameInput = (e) => {
+        setNewAspekInput(prev => ({ 
+            ...prev, 
+            name: e.target.value, 
+            id: null 
+        }));
+    };
+
+    const handleAspectPercentageChange = (value) => {
+        setNewAspekInput(prev => ({ 
+            ...prev, 
+            percentage: value[0] 
+        }));
+    };
+
+    const handleAddAspek = () => {
+        const { name, percentage, id } = newAspekInput;
+
+        if (!name || percentage <= 0 || percentage > 100) {
+            alert('Nama aspek harus diisi dan bobot harus antara 1% sampai 100%.');
+            return;
+        }
+
+        if (aspekList.some(a => a.name === name || (id && a.id === id))) {
+            alert(`Aspek '${name}' sudah ditambahkan.`);
+            return;
+        }
+        
+        if (bobotAspekAkumulasi + percentage > 100) {
+            alert(`Total bobot aspek melebihi 100%. Sisa yang bisa ditambahkan: ${100 - bobotAspekAkumulasi}%.`);
+            return;
+        }
+
+        const newItem = {
+            cid: Date.now(), 
+            id: id, 
+            name: name,
+            percentage: percentage,
+        };
+        setAspekList(prev => [...prev, newItem]);
+
+        setNewAspekInput({ name: '', percentage: 0, id: null });
+    };
+
+    const handleRemoveAspek = (cid) => {
+        setAspekList(prev => prev.filter(aspek => aspek.cid !== cid));
+    };
+
+    useEffect(() => {
+        if (!isOpen) {
+            setMinggu(null);
+            setAspekList([]);
+            setBobotMinggu(0);
+            setNewAspekInput({ name: '', percentage: 0, id: null });
+        }
+    }, [isOpen]);
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (bobotAspekTotal !== TARGET_BOBOT_MINGGU) {
-            alert(`Bobot total aspek harus mencapai ${TARGET_BOBOT_MINGGU}%. Saat ini: ${bobotAspekTotal}%.`);
+        if (bobotAspekAkumulasi !== 100) {
+            alert(`Total bobot semua aspek harus mencapai 100%. Saat ini: ${bobotAspekAkumulasi}%.`);
             return;
         }
 
-        // payload untuk POST /api/week-type
+        if (newTotalWeight > 100) {
+            alert(`Gagal! Total melebihi 100%.`);
+            return;
+        }
+
+        if (bobotMinggu <= 0) {
+            alert('Bobot minggu harus lebih dari 0%.');
+            return;
+        }
+
+        if (!minggu) {
+            alert('Minggu ke- harus dipilih.');
+            return;
+        }
+
+        const aspekWithId = await Promise.all(aspekList.map(async (aspek) => {
+            if (aspek.id) return aspek; 
+
+            const res = await fetch(`${LARAVEL_API_BASE_URL}/grade-type`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: aspek.name,
+                    percentage: aspek.percentage,
+                }),
+            });
+            const data = await res.json();
+            return { ...aspek, id: data.data.id }; 
+        }));
+
         const payload = {
-            name: minggu.label, 
-            percentage: bobotAspekTotal,
-            
-            // Hanya kirimkan ID dari GradeType yang sudah dibuat
-            grade_types: aspekList.map(aspek => aspek.id), 
+            name: minggu.label,
+            percentage: bobotMinggu,
+            grade_types: aspekWithId.map(a => a.id), 
         };
-        
+
         await onSubmit(payload);
         onClose();
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[480px] lg:max-w-[550px] p-6 md:p-8">
+            <DialogContent className="max-w-xl">
                 <DialogHeader>
-                    <DialogTitle className="text-center text-primary font-bold text-xl">Parameter Penilaian</DialogTitle>
+                    <DialogTitle>Input Parameter Penilaian</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className='grid gap-6 py-4'>
-                        {/* Pilihan Minggu Ke- */}
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="minggu">Minggu ke-</Label>
-                            <Select 
-                                id="minggu"
-                                options={mingguOptions}
-                                value={minggu}
-                                onChange={setMinggu}
-                                placeholder="Pilih Minggu"
-                                required
-                            />
-                        </div>
-                        
-                        {/* Bobot Penilaian Total */}
-                        <div className="flex flex-col gap-2 mt-2">
-                            <Label>Bobot penilaian total: {bobotAspekTotal}%</Label>
-                            {/* Slider untuk visualisasi total 100% */}
-                            <Slider min={0} max={100} step={1} value={[bobotAspekTotal]} disabled />
-                            <div className='flex justify-between text-xs text-gray-500'>
-                                <span>0%</span>
-                                <span>100%</span>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="minggu" className="text-left">Minggu ke-</Label>
+                            <div className="col-span-3">
+                                <Select 
+                                    id="minggu"
+                                    options={mingguOptions}
+                                    value={minggu}
+                                    onChange={handleSelectMingguChange} 
+                                    placeholder="Pilih Minggu..."
+                                    isClearable
+                                />
                             </div>
                         </div>
 
-                        {/* Daftar Aspek Penilaian */}
-                        <div className="flex flex-col gap-3 pt-2">
-                            <Label className='font-semibold'>Aspek Penilaian</Label>
+                        <div className="flex flex-col gap-2 mt-2">
+                            <Label>Bobot penilaian total minggu: **{bobotMinggu}%** (Sisa Kuota: {100 - totalWeekWeight}%)</Label> 
                             
-                            {aspekList.map((aspek) => (
-                                <div 
-                                    key={aspek.id} 
-                                    className="flex items-center justify-between p-3 rounded-lg border border-gray-200"
-                                >
-                                    <span className="font-medium text-gray-800 cursor-pointer flex-1" onClick={() => handleEditAspek(aspek)}>
-                                        {aspek.name}
-                                    </span>
-                                    
-                                    <div className='flex items-center space-x-3'>
-                                        <span className="text-primary font-semibold w-10 text-right">{aspek.percentage}%</span>
-                                        <Button type="button" variant="icon-only-2" onClick={() => handleRemoveAspek(aspek.id)}>
-                                            <Icon name="remove-red" size={20} /> 
-                                        </Button>
+                            <Slider 
+                                min={0} 
+                                max={maxSliderValue} 
+                                step={1} 
+                                value={[bobotMinggu]} 
+                                onValueChange={handleSliderMingguChange} 
+                                disabled={totalWeekWeight >= 100}
+                            />
+                            <div className='flex justify-between text-xs text-gray-500'>
+                                <span>0%</span>
+                                <span>{maxSliderValue}%</span>
+                            </div>
+                            {totalWeekWeight >= 100 && (
+                                <p className="text-red-600 text-sm mt-1">Kuota 100% sudah terpenuhi. Tidak bisa menambah bobot minggu lagi.</p>
+                            )}
+                        </div>
+
+                        {/* Aspek Penilaian */}
+                        <div className='mt-4 p-4 border rounded-md'>
+                            <Label className='font-bold mb-2 block'>Aspek Penilaian (Total Bobot: {bobotAspekAkumulasi}%)</Label>
+                            <ul className='space-y-2 mb-3 max-h-40 overflow-y-auto'>
+                                {aspekList.map(aspek => (
+                                    <li key={aspek.cid} className='flex justify-between items-center text-sm p-2 bg-gray-50 rounded-md'>
+                                        <span className={aspek.id ? 'font-medium text-blue-600' : 'font-medium'}>
+                                            {aspek.name} {aspek.id ? '(Re-used ID: '+aspek.id+')' : '(BARU)'}
+                                        </span>
+                                        <div className='flex items-center space-x-2'>
+                                            <span className='font-semibold'>{aspek.percentage}%</span>
+                                            <Button 
+                                                variant='icon-only' 
+                                                size='sm' 
+                                                onClick={() => handleRemoveAspek(aspek.cid)}
+                                                aria-label={`Hapus ${aspek.name}`}
+                                            >
+                                                <Icon name="remove-red" size={20} />
+                                            </Button>
+                                        </div>
+                                    </li>
+                                ))}
+                                {aspekList.length === 0 && <li className='text-center text-gray-500'>Belum ada aspek yang ditambahkan.</li>}
+                            </ul>
+                            
+                            <div className={`text-center font-semibold text-sm ${bobotAspekAkumulasi === 100 ? 'text-green-600' : 'text-red-600'}`}>
+                                Total Bobot Aspek: {bobotAspekAkumulasi}% (Harus 100%)
+                            </div>
+                        </div>
+
+                        <div className='grid gap-3 p-4 border rounded-md bg-gray-50'>
+                            <Label className='font-semibold'>Tambahkan Aspek Baru/Pilih Ulang</Label>
+                            <div className="grid grid-cols-3 items-center gap-4">
+                                <Label className="text-left">Nama Aspek</Label>
+                                <div className="col-span-2">
+                                    <Select
+                                        options={aspekOptions}
+                                        onChange={handleAspectSelect}
+                                        placeholder="Pilih aspek yang sudah ada..."
+                                        isClearable
+                                    />
+                                    <Input
+                                        className='mt-2'
+                                        placeholder='Atau ketik nama aspek baru'
+                                        value={newAspekInput.name}
+                                        onChange={handleAspectNameInput}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 items-center gap-4">
+                                <Label className="text-left">Bobot (%)</Label>
+                                <div className="col-span-2">
+                                    <Slider
+                                        min={1} max={100 - bobotAspekAkumulasi} step={1}
+                                        value={[newAspekInput.percentage]}
+                                        onValueChange={handleAspectPercentageChange}
+                                        disabled={bobotAspekAkumulasi >= 100 || !newAspekInput.name}
+                                    />
+                                    <div className='text-sm mt-1'>
+                                        {newAspekInput.percentage}% (Maks: {100 - bobotAspekAkumulasi}%)
                                     </div>
                                 </div>
-                            ))}
-                            
+                            </div>
                             <Button 
                                 type="button" 
-                                variant='secondary' 
+                                variant='primary'
                                 className="w-full justify-center mt-3" 
-                                onClick={() => { setEditingAspek(null); setIsAspekModalOpen(true); }}
+                                onClick={handleAddAspek}
+                                disabled={bobotAspekAkumulasi >= 100 || !newAspekInput.name || newAspekInput.percentage <= 0}
                             >
-                                <span className='mr-2'>Tambah Aspek Penilaian</span>
+                                <span className='mr-2'>Tambahkan Aspek</span>
                                 <Icon name="filled-plus" size={20} />
                             </Button>
                         </div>
                     </div>
                     <DialogFooter className='mt-6'>
                         <Button type="button" variant='secondary' onClick={onClose}>Batal</Button>
-                        {/* Tombol simpan akan disable jika bobot tidak 100 atau minggu belum dipilih */}
-                        <Button type="submit" variant="primary" disabled={bobotAspekTotal !== TARGET_BOBOT_MINGGU || !minggu}>Simpan</Button>
+                        <Button 
+                            type="submit" 
+                            variant="primary" 
+                            disabled={bobotAspekAkumulasi !== 100 || bobotMinggu <= 0 || !minggu || newTotalWeight > 100}
+                        >
+                            Simpan Parameter
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
-            
-            <AspekPenilaianModal
-                isOpen={isAspekModalOpen}
-                onClose={() => { setIsAspekModalOpen(false); setEditingAspek(null); }}
-                onSubmit={handleAddAspek}
-                initialData={editingAspek}
-            />
         </Dialog>
     );
 };
@@ -193,6 +310,11 @@ ParameterPenilaianModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
+    existingGradeTypes: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number,
+        name: PropTypes.string,
+    })).isRequired,
+    totalWeekWeight: PropTypes.number.isRequired,
 };
 
 export default ParameterPenilaianModal;

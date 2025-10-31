@@ -19,6 +19,7 @@ const MatrixTable = ({
     totalPages, 
     currentPage, 
     onPageChange, 
+    totalWeekWeight, 
 }) => {
     
     const renderCell = (item, column) => {
@@ -71,7 +72,6 @@ const MatrixTable = ({
                 </div>
             </div>
 
-            {/* Tabel Utama */}
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -81,17 +81,19 @@ const MatrixTable = ({
                                     {col.label}
                                 </th>
                             ))}
-
                             <th colSpan={dynamicHeaders.length} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider border-l border-r border-white/50">
                                 Penilaian
                             </th>
-
-                            {columns.slice(2).map(col => (
+                            <th className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
+                                TOTAL SKOR
+                            </th>
+                            {columns.slice(2).map(col => ( // Mulai dari 'Catatan' (index 2 di STATIC_COLUMNS yang baru)
                                 <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
                                     {col.label}
                                 </th>
                             ))}
                         </tr>
+                        
                         <tr>
                             <th colSpan={2} className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-medium text-gray-800 uppercase tracking-wider border-r border-gray-200"></th>
                             
@@ -100,6 +102,13 @@ const MatrixTable = ({
                                     {col.label}
                                 </th>
                             ))}
+                            
+                            <th className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-bold text-primary uppercase tracking-wider border-r border-gray-200">
+                                {totalWeekWeight}%
+                            </th>
+                            
+                            <th colSpan={columns.slice(2).length - 1} className="px-3 py-3 md:px-6 md:py-3 bg-white text-center text-xs font-medium text-gray-800 uppercase tracking-wider border-r border-gray-200"></th>
+
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -116,6 +125,10 @@ const MatrixTable = ({
                                         {renderDynamicCell(item, header)}
                                     </React.Fragment>
                                 ))}
+                                
+                                <td className="px-3 py-4 md:px-6 md:py-4 text-center font-bold">                                    
+                                    0% 
+                                </td>
                                 
                                 {columns.slice(2).map(column => (
                                     <React.Fragment key={column.key}>
@@ -153,6 +166,7 @@ MatrixTable.propTypes = {
     totalPages: PropTypes.number,
     currentPage: PropTypes.number.isRequired,
     onPageChange: PropTypes.func.isRequired,
+    totalWeekWeight: PropTypes.number.isRequired, 
 };
 
 MatrixTable.defaultProps = {
