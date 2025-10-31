@@ -175,7 +175,7 @@ const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xl">
+            <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Input Parameter Penilaian</DialogTitle>
                 </DialogHeader>
