@@ -3,23 +3,47 @@ import PropTypes from 'prop-types';
 import Button from '@/components/atoms/Button';
 import Icon from '@/components/atoms/Icon';
 
-const MatriksHeaderButton = ({ onClick }) => {
+const MatrixHeaderButton = ({ onClick }) => {
     return (
         <div className="flex justify-start mb-4">
-            <Button 
-                onClick={onClick} 
-                variant="primary" 
-                className="text-sm text-primary flex items-center p-0 md:p-1" 
+            <Button
+                onClick={onClick}
+                variant="icon-only-2"
+                className="
+                    bg-white
+                    text-[#291B3E]   
+                    font-semibold
+                    rounded-2xl
+                    shadow-sm
+                    hover:shadow-md
+                    transition-all
+                    flex items-center
+                    px-4 py-2
+                    border border-gray-100
+                "
             >
-                <Icon name="filled-plus" size={18} className="mr-1" />
-                Parameter Penilaian
+                <div
+                    className="
+                        text-white
+                        rounded-lg
+                        w-7 h-7
+                        flex items-center justify-center
+                        mr-3
+                    "
+                >
+                    <Icon name="filled-plus" size={25} />
+                </div>
+
+                <span className="text-sm md:text-base">
+                    Parameter Penilaian
+                </span>
             </Button>
         </div>
     );
 };
 
-MatriksHeaderButton.propTypes = {
+MatrixHeaderButton.propTypes = {
     onClick: PropTypes.func.isRequired,
 };
 
-export default MatriksHeaderButton;
+export default MatrixHeaderButton;
