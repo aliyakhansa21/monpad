@@ -14,28 +14,19 @@ export default function PenilaianMingguanPage() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const [penilaianData, setPenilaianData] = useState([]);
     const [gradeTypes, setGradeTypes] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    
-    // State untuk Dropdown Minggu
+    const [searchTerm, setSearchTerm] = useState('');    
     const [mingguOptions, setMingguOptions] = useState([]); 
     const [weekTypeList, setWeekTypeList] = useState([]); 
     const [isLoadingMinggu, setIsLoadingMinggu] = useState(true);
-    const [selectedMinggu, setSelectedMinggu] = useState(''); 
-    
-    // State Loading untuk Data Penilaian
-    const [isLoadingAssessment, setIsLoadingAssessment] = useState(false); 
-    
-    // State Modal
+    const [selectedMinggu, setSelectedMinggu] = useState('');     
+    const [isLoadingAssessment, setIsLoadingAssessment] = useState(false);     
     const [isModalOpen, setIsModalOpen] = useState(false); 
-
     const toggleSidebar = () => { setIsSidebarExpanded(prev => !prev); };
 
-    // Fetch Daftar Week Types (Minggu ke-1, ke-2, dst)
     useEffect(() => {
         const fetchWeekTypes = async () => {
             setIsLoadingMinggu(true);
             try {
-                // Perbaikan #1: Menggunakan endpoint /week-type untuk mengambil daftar minggu
                 const response = await fetch(`${LARAVEL_API_BASE_URL}/week-type`); 
                 
                 if (!response.ok) {
@@ -46,23 +37,17 @@ export default function PenilaianMingguanPage() {
                 const result = await response.json();
                 const weekTypes = result.data || [];
 
-                console.log("WeekTypes dari API:", weekTypes);
-                
-                // Simpan data lengkap untuk nanti
+                console.log("WeekTypes dari API:", weekTypes);                
                 setWeekTypeList(weekTypes);
 
-                // Buat options untuk dropdown
                 const options = weekTypes.map(wt => ({ 
                     value: wt.id.toString(), 
                     label: wt.name || `Minggu ${wt.id}` 
                 }));
                 setMingguOptions(options);
 
-                // Set minggu pertama sebagai default
                 if (options.length > 0) {
-                    setSelectedMinggu(options[0].value);
-                    
-                    // Ambil grade_types dari week type pertama
+                    setSelectedMinggu(options[0].value);                    
                     if (weekTypes[0].grade_types) {
                         setGradeTypes(weekTypes[0].grade_types);
                     }
@@ -74,11 +59,9 @@ export default function PenilaianMingguanPage() {
                 setIsLoadingMinggu(false);
             }
         };
-
         fetchWeekTypes();
     }, []);
 
-    // Update Grade Types ketika minggu berubah
     useEffect(() => {
         if (selectedMinggu && weekTypeList.length > 0) {
             const selectedWeekType = weekTypeList.find(wt => wt.id.toString() === selectedMinggu);
@@ -94,9 +77,7 @@ export default function PenilaianMingguanPage() {
         setIsLoadingAssessment(true);
         console.log("Fetching penilaian untuk week_type_id:", weekTypeId);
         
-        try {
-            // GET /api/week akan mengembalikan semua Week resources
-            // HARUS FILTER DI FRONT-END karena BE tidak bisa diubah
+        try {            
             const response = await fetch(`${LARAVEL_API_BASE_URL}/week`);
             
             if (!response.ok) {
@@ -110,12 +91,8 @@ export default function PenilaianMingguanPage() {
 
             console.log("All weeks dari API:", allWeeks);
             
-            // Perbaikan #2: Filter yang lebih fleksibel
-            const filteredWeeks = allWeeks.filter(week => {
-                // Mencoba mencocokkan ID dari properti bersarang (week.week_type.id) 
-                // atau properti foreign key langsung (week.week_type_id)
-                const idToMatch = week.week_type?.id || week.week_type_id; 
-                
+            const filteredWeeks = allWeeks.filter(week => {                
+                const idToMatch = week.week_type?.id || week.week_type_id;                 
                 return idToMatch && idToMatch.toString() === weekTypeId.toString();
             });
 
@@ -131,7 +108,6 @@ export default function PenilaianMingguanPage() {
         }
     }, []);
 
-    // Fetch data ketika minggu berubah
     useEffect(() => {
         if (selectedMinggu) {
             fetchPenilaianData(selectedMinggu);

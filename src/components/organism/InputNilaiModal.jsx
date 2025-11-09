@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import Select from '@/components/atoms/Select'; 
 import Button from '@/components/atoms/Button';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = 'https://simpad.novarentech.web.id/api';
 
-// --- Komponen Input Angka dengan Tombol +/- ---
 const GradeInput = ({ label, value, onChange, gradeTypeId }) => (
     <div className="flex flex-col space-y-2">
         <label className="text-sm font-medium text-gray-700">{label}</label>
@@ -15,7 +14,7 @@ const GradeInput = ({ label, value, onChange, gradeTypeId }) => (
                 type="button"
                 className="w-6 h-6 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded text-lg"
             >
-                −
+                -
             </button>
             <input 
                 type="number"
@@ -43,7 +42,6 @@ GradeInput.propTypes = {
     gradeTypeId: PropTypes.number.isRequired,
 };
 
-// --- Komponen Modal Utama ---
 const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSuccess }) => {
     const [kelompokOptions, setKelompokOptions] = useState([]);
     const [projectOptions, setProjectOptions] = useState([]);
@@ -61,7 +59,6 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
 
-    // Fetch Daftar Proyek dan Kelompok
     useEffect(() => {
         if (isOpen) {
             const fetchProjects = async () => {
@@ -96,10 +93,8 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
                         return;
                     }
                     
-                    // Simpan semua proyek
                     setAllProjects(projects);
                     
-                    // Ekstrak kelompok unik
                     const uniqueKelompok = [...new Set(projects.map(p => p.group_name || 'Tidak ada kelompok'))];
                     const kOptions = uniqueKelompok.map(k => ({ 
                         value: k, 
@@ -107,10 +102,8 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
                     }));
                     setKelompokOptions(kOptions);
                     
-                    // Set kelompok pertama sebagai default
                     const defaultKelompok = kOptions[0]?.value || '';
                     
-                    // Filter proyek berdasarkan kelompok pertama
                     const filteredProjects = projects.filter(p => 
                         (p.group_name || 'Tidak ada kelompok') === defaultKelompok
                     );
@@ -120,7 +113,6 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
                     }));
                     setProjectOptions(pOptions);
 
-                    // Reset form
                     setFormData({
                         kelompok: defaultKelompok,
                         project_id: pOptions[0]?.value || '',
@@ -176,7 +168,6 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
         }));
     }, []);
 
-    // Handle Submit ke API (POST /api/week)
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -193,11 +184,10 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
         setIsSaving(true);
         setError(null);
 
-        // Sesuaikan payload dengan dokumentasi API
         const payload = {
             week_type_id: weekTypeId,
             notes: formData.notes || '',
-            date: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
+            date: new Date().toISOString().split('T')[0], 
             project_id: parseInt(formData.project_id),
             grades: formData.grades.map(g => ({
                 grade_type_id: g.grade_type_id,
@@ -224,8 +214,6 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
             if (!response.ok) {
                 throw new Error(responseData.message || 'Gagal menyimpan nilai.');
             }
-
-            // Sukses
             alert('Penilaian berhasil disimpan!');
             onSaveSuccess();
             onClose();
@@ -258,7 +246,6 @@ const InputNilaiModal = ({ isOpen, onClose, gradeTypes, weekTypeId, onSaveSucces
                         </div>
                     )}
                     
-                    {/* Row 1: Kelompok & Nama Proyek */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* Kelompok */}
                         <div className="flex flex-col space-y-2">
