@@ -19,24 +19,20 @@ const PROJECT_COLUMNS = [
         key: 'asisten', 
         label: 'Asisten',
         render: (item) => {
-        // Ambil data asisten
             const asistenData = item.asisten;
 
             if (!asistenData) {
-                return 'Tidak Ada'; // Jika null atau undefined
+                return 'Tidak Ada'; 
             }
 
             if (Array.isArray(asistenData)) {
-                // KASUS 1: Jika ini adalah Array (koleksi/many-to-many)
                 if (asistenData.length === 0) {
                     return 'Tidak Ada';
                 }
                 return asistenData.map(a => a.username).join(', ');
                 
             } else if (typeof asistenData === 'object' && asistenData.username) {
-                // KASUS 2: Jika ini adalah Object tunggal (seperti yang muncul di console log Anda)
-                return asistenData.username; 
-                
+                return asistenData.username;                 
             } else {
                 return 'Tidak Ada';
             }
@@ -59,7 +55,7 @@ export default function DataProjectPage() {
     const [dosenList, setDosenList] = useState([]);
     const [asistenList, setAsistenList] = useState([]);
 
-    const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
+    const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
 
     const fetchProjectData = useCallback(async () => {
         setIsLoading(true);

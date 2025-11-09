@@ -30,7 +30,7 @@ const AspekPenilaianModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     const handleSliderChange = (value) => {
         setFormData(prevState => ({
             ...prevState,
-            percentage: value[0], // Slider biasanya mengembalikan array
+            percentage: value[0],
         }));
     };
 

@@ -63,7 +63,6 @@ const MahasiswaModal = ({ isOpen, onClose, onSubmit, initialData, mode }) => {
         }
         const dataToSubmit = { 
         ...formData, 
-        // Mapping kunci FE (konfirmasiPassword) ke kunci BE (password_confirmation)
         password_confirmation: formData.password_confirmation
         };
         
