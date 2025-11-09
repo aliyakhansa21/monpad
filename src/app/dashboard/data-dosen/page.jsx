@@ -24,7 +24,7 @@ export default function DataDosenPage() {
     const [dosenData, setDosenData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
+    const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
 
     const fetchDosenData = async () => {
         setIsLoading(true);
