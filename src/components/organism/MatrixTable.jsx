@@ -1,4 +1,3 @@
-export default MatrixTable;
 import React from 'react';
 import PropTypes from 'prop-types';
 import SearchInput from '@/components/molecules/SearchInput'; 
@@ -180,3 +179,4 @@ MatrixTable.defaultProps = {
     totalPages: 1,
 };
 
+export default MatrixTable;
