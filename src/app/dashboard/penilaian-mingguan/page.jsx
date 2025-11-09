@@ -8,7 +8,7 @@ import MingguSelect from '@/components/molecules/MingguSelect';
 import InputNilaiModal from '@/components/organism/InputNilaiModal';
 
 const CURRENT_USER_ROLE = 'asisten'; 
-const LARAVEL_API_BASE_URL = 'http://127.0.0.1:8000/api'; 
+const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api'; 
 
 export default function PenilaianMingguanPage() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -35,7 +35,8 @@ export default function PenilaianMingguanPage() {
         const fetchWeekTypes = async () => {
             setIsLoadingMinggu(true);
             try {
-                const response = await fetch(`${LARAVEL_API_BASE_URL}/week-type`);
+                // Perbaikan #1: Menggunakan endpoint /week-type untuk mengambil daftar minggu
+                const response = await fetch(`${LARAVEL_API_BASE_URL}/week-type`); 
                 
                 if (!response.ok) {
                     console.error(`Gagal fetch daftar minggu. Status: ${response.status}`);
@@ -95,7 +96,7 @@ export default function PenilaianMingguanPage() {
         
         try {
             // GET /api/week akan mengembalikan semua Week resources
-            // Kita perlu filter berdasarkan week_type_id
+            // HARUS FILTER DI FRONT-END karena BE tidak bisa diubah
             const response = await fetch(`${LARAVEL_API_BASE_URL}/week`);
             
             if (!response.ok) {
@@ -109,10 +110,14 @@ export default function PenilaianMingguanPage() {
 
             console.log("All weeks dari API:", allWeeks);
             
-            // Filter data berdasarkan week_type_id yang dipilih
-            const filteredWeeks = allWeeks.filter(week => 
-                week.week_type && week.week_type.id.toString() === weekTypeId.toString()
-            );
+            // Perbaikan #2: Filter yang lebih fleksibel
+            const filteredWeeks = allWeeks.filter(week => {
+                // Mencoba mencocokkan ID dari properti bersarang (week.week_type.id) 
+                // atau properti foreign key langsung (week.week_type_id)
+                const idToMatch = week.week_type?.id || week.week_type_id; 
+                
+                return idToMatch && idToMatch.toString() === weekTypeId.toString();
+            });
 
             console.log("Filtered weeks untuk week_type_id", weekTypeId, ":", filteredWeeks);
             
