@@ -1,5 +1,3 @@
-// src/app/dashboard/matriks-nilai/page.jsx
-
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AppSidebar } from "@/components/organism/app-sidebar";
@@ -9,18 +7,7 @@ import ParameterPenilaianModal from "@/components/organism/ParameterPenilaianMod
 import MatrixHeaderButton from "@/components/molecules/MatrixHeaderButton";
 import Footer from "@/components/organism/Footer"; 
 
-const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
-
-// const STATIC_COLUMNS = [
-//     { key: 'kelompok_id', label: 'Kelompok' },
-//     { key: 'nama_proyek', label: 'Nama Proyek' },
-//     // Kolom Kanan
-//     { key: 'total_skor', label: 'Total Skor', render: (item) => `${item.total_skor || 0}%` },
-//     { key: 'catatan', label: 'Catatan' },
-//     { key: 'review_dosen', label: 'Review Dosen' },
-//     { key: 'aksi', label: 'Aksi' },
-// ];
-
+const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
 
 export default function MatriksNilaiPage() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -33,40 +20,32 @@ export default function MatriksNilaiPage() {
     const [dynamicHeaders, setDynamicHeaders] = useState([]);
     const [totalWeekWeight, setTotalWeekWeight] = useState(0); 
     
-    // --- FUNGSI FETCH WEEK TYPE (BARU/DIPERBAIKI) ---
     const fetchWeekTypeData = useCallback(async () => {
         try {
             const weekTypeResponse = await fetch(`${LARAVEL_API_BASE_URL}/week-type`);
             if (!weekTypeResponse.ok) throw new Error("Gagal mengambil struktur penilaian.");
             const weekTypeData = await weekTypeResponse.json();
             
-            // 1. Hitung total bobot dari semua WeekType yang sudah ada
             const total = (weekTypeData.data || []).reduce((sum, wt) => sum + wt.percentage, 0);
             setTotalWeekWeight(total);
             
-            // 2. Membangun DYNAMIC_HEADERS
             const newHeaders = (weekTypeData.data || []).map(wt => ({
-                key: `nilai_${wt.id}`, // Gunakan ID WeekType untuk key nilai
+                key: `nilai_${wt.id}`, 
                 label: `${wt.name}\n${wt.percentage}%`, 
             }));
             setDynamicHeaders(newHeaders);
             
-            return weekTypeData; // Mengembalikan data jika perlu
+            return weekTypeData; 
         } catch (error) {
             console.error("Error fetching week types:", error);
             return null;
         }
-    }, [setTotalWeekWeight, setDynamicHeaders]); // Masukkan dependencies
+    }, [setTotalWeekWeight, setDynamicHeaders]); 
         
-    
-    // --- FUNGSI FETCH MATRIX DATA (DATA BARIS) ---
     const fetchMatrixData = useCallback(async () => {
         setIsLoading(true);
         try {
-            // 1. Ambil data WeekType (untuk headers dan total bobot)
-            await fetchWeekTypeData(); // <<< Panggil fungsi yang baru di sini
-
-            // 2. Ambil data utama Matriks (yang berisi nilai per proyek)
+            await fetchWeekTypeData(); 
             const matrixResponse = await fetch(`${LARAVEL_API_BASE_URL}/grade-type`); 
             if (!matrixResponse.ok) throw new Error("Gagal mengambil data baris matriks.");
 
@@ -78,7 +57,7 @@ export default function MatriksNilaiPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [fetchWeekTypeData, setGradeTypeData]); // Masukkan fetchWeekTypeData sebagai dependency
+    }, [fetchWeekTypeData, setGradeTypeData]); 
 
     const fetchGradeTypesList = useCallback(async () => {
         try {
@@ -91,17 +70,7 @@ export default function MatriksNilaiPage() {
         }
     }, []);
 
-    // Gunakan useMemo untuk membuat kolom statis agar di-update saat state berubah
     const STATIC_COLUMNS = useMemo(() => {
-        
-        // Definisikan kolom Total Skor di sini
-        // const TOTAL_SCORE_COLUMN = { 
-        //     key: 'total_skor', 
-        //     // label: 'TOTAL SKOR',
-        //     // Menggunakan nilai dari state totalWeekWeight
-        //     render: () => `${totalWeekWeight}%` 
-        // };
-
         return [
             { key: 'kelompok_id', label: 'KELOMPOK' },
             { key: 'nama_proyek', label: 'NAMA PROYEK' },
@@ -109,17 +78,13 @@ export default function MatriksNilaiPage() {
             { key: 'catatan', label: 'CATATAN' },
             { key: 'review_dosen', label: 'REVIEW DOSEN' },
             { key: 'aksi', label: 'AKSI' },
-        ];
-        
-    // Dependency array harus mencakup totalWeekWeight
+        ];        
     }, [totalWeekWeight]);
 
     useEffect(() => {
         fetchMatrixData();
         fetchGradeTypesList();
     }, [fetchMatrixData, fetchGradeTypesList]);
-
-
 
     const handleModalSubmit = async (payload) => { 
         try {
@@ -154,10 +119,8 @@ export default function MatriksNilaiPage() {
                 } else {
                     errorMessage = `Gagal menyimpan data: ${response.status}.`;
                 }
-
                 throw new Error(errorMessage);
             }
-
             await fetchMatrixData();
             await fetchGradeTypesList(); 
             alert(`Parameter Minggu ${payload.name} berhasil ditambahkan!`);
@@ -188,8 +151,9 @@ export default function MatriksNilaiPage() {
         setIsSidebarExpanded(!isSidebarExpanded);
     };
 
-    const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]" ;
-
+    const mainContentMargin = isSidebarExpanded 
+        ? "md:ml-[256px]" 
+        : "md:ml-[72px]" ;
 
     return (
         <div className="flex h-screen bg-background-light">
@@ -199,9 +163,9 @@ export default function MatriksNilaiPage() {
             
             <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
                 <div className='p-3 flex-1 bg-background-light'>
-                    <div className={'pl-6'}>
+                    <div className={'p-4 md:pl-6'}>
                         <DashboardHeader title="Matriks Nilai"/>                        
-                        <main className="p-4">                            
+                        <main className="p-0 md:p-4"> 
                             <MatrixHeaderButton onClick={handleInputParameter} />
                             <MatrixTable
                                 data={gradeTypeData} 
@@ -220,7 +184,6 @@ export default function MatriksNilaiPage() {
                 <Footer/>
             </div>
 
-            {/* Modal Input Parameter */}
             <ParameterPenilaianModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

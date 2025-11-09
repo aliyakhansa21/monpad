@@ -18,22 +18,24 @@ const MatrixHeaderButton = ({ onClick }) => {
                     hover:shadow-md
                     transition-all
                     flex items-center
-                    px-4 py-2
+                    px-4 py-2 
                     border border-gray-100
+                    flex-shrink-0 
                 "
             >
                 <div
                     className="
                         text-white
                         rounded-lg
-                        w-7 h-7
+                        w-7 h-7 
                         flex items-center justify-center
                         mr-3
+                        mr-2 sm:mr-3
+                        w-6 h-6 sm:w-7 sm:h-7
                     "
                 >
                     <Icon name="filled-plus" size={25} />
                 </div>
-
                 <span className="text-sm md:text-base">
                     Parameter Penilaian
                 </span>
