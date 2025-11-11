@@ -85,6 +85,8 @@ module.exports = {
         'hover-light': '#EDEDED',
         'hover-dark': '#52357B',
         'danger': '#BC0006',
+        'login-start': '#8672A3',
+        'login-end': '#291B3E',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
