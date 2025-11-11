@@ -138,7 +138,7 @@ const PenilaianMingguanTable = ({
                             onClick={onReview} 
                             variant="icon-only-2" 
                             aria-label="Tambah Nilai Baru"
-                            className="bg-purple-600 text-white hover:bg-purple-700 rounded-md p-2 shadow-lg transition duration-150"
+                            className="bg-purple-600 text-white rounded-md p-2 shadow-lg transition duration-150"
                         >
                             <Icon name="filled-plus" size={30} /> 
                         </Button>
