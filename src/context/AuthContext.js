@@ -6,7 +6,7 @@ import apiAuth from '@/lib/apiAuth'; // apiAuth.js (tanpa interceptor, untuk log
 
 const AuthContext = createContext(null);
 
-const API_BASE_URL = 'https://simpad.novarentech.web.id/api/';
+const API_BASE_URL = 'https://simpad.novarentech.web.id/api/login';
 
 export function AuthProvider({ children }) {
     const router = useRouter();
@@ -51,7 +51,9 @@ export function AuthProvider({ children }) {
     const login = async (credentials) => {
         setIsLoading(true);
         try {
-            const response = await apiAuth.post('login', credentials);             
+            console.log('pathnya kesini')
+            const response = await apiAuth.post(API_BASE_URL, credentials);
+            console.log(response)           
             const { token, user: userData } = response.data;
 
             console.log("LOGIN BERHASIL! Token yang diterima:", token); 
@@ -105,6 +107,8 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
+    console.log(' Wailahh ')
+    console.log(context)
     if (!context) {
         throw new Error('useAuth harus digunakan di dalam AuthProvider');
     }

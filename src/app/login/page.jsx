@@ -7,9 +7,11 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
     const { login } = useAuth();
+    
+    // console.log()
     const router = useRouter();
     const [formData, setFormData] = useState({
-        nama: '',
+        username: '',
         email: '',
         role: '',
         password: '',
@@ -27,10 +29,13 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login({
+            console.log('Ini masuk')
+            const cek = await login({
+                username: formData.username,
                 email: formData.email,
                 password: formData.password,
             });
+            console.log('Ini hasil: '+ cek)
         } catch (error) {
             alert(error.message); 
         }
@@ -55,7 +60,7 @@ export default function Login() {
                     className="flex items-center text-sm sm:text-base text-gray-600 hover:text-gray-800 mb-4 sm:mb-6 transition-colors"
                 >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                     Kembali
                 </button>
@@ -69,8 +74,8 @@ export default function Login() {
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nama</label>
                         <input
                             type="text"
-                            name="nama"
-                            value={formData.nama}
+                            name="username"
+                            value={formData.username}
                             onChange={handleChange}
                             placeholder="Masukkan Nama"
                             className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-primary rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm sm:text-base"
