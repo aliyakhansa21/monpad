@@ -44,31 +44,27 @@ const MatrixTable = ({
         else {
             value = item[column.key];
         }
-
-        return <td className="px-3 py-4 md:px-6 md:py-4 text-center">{value || '-'}</td>; 
+        return <td className={cellBaseClasses}>{value || '-'}</td>; 
     };
 
     const renderDynamicCell = (item, header) => {
-        const value = item[header.key] || 0; 
-        
+        const value = item[header.key] || 0;         
         if (header.key === 'total_skor') {
-            return <td className="px-3 py-4 md:px-6 md:py-4 text-center font-bold">{value}</td>; 
+            return <td className={`${cellBaseClasses} font-bold`}>{value}</td>; 
         }
-
-        return <td className="px-3 py-4 md:px-6 md:py-4 text-center">{value}</td>; 
+        return <td className={cellBaseClasses}>{value}</td>; 
     };
 
     const allHeaders = [...columns, ...dynamicHeaders];
 
 
     return (
-        <div className="bg-white p-4 md:p-6 rounded-lg shadow">
+        <div className="bg-white p-4 md:p-6 rounded-lg shadow">            
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0"> 
-                <span className="text-xl font-bold text-gray-800 hidden md:block">{title}</span> 
-
-                <div className="flex items-center space-x-2 md:space-x-4 md:w-auto"> 
+                <span className="text-xl font-bold text-gray-800">{title}</span> 
+                <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto justify-end"> 
                     <SearchInput placeholder="Search" onChange={(e) => onSearch(e.target.value)} />
-                    <span className="text-sm">Show by: All</span>
+                    <span className="text-sm min-w-max">Show by: All</span>
                 </div>
             </div>
 
@@ -80,17 +76,17 @@ const MatrixTable = ({
                                 <th 
                                     rowSpan={2} 
                                     key={col.key} 
-                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                    className={headerBaseClasses} 
                                 >
                                     {col.label}
                                 </th>
                             ))}
                             
-                            <th colSpan={dynamicHeaders.length} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider border-l border-r border-white/50">
+                            <th colSpan={dynamicHeaders.length} className={headerBaseClasses}>
                                 Penilaian
                             </th>
                             
-                            <th className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider">
+                            <th className={headerBaseClasses}>
                                 TOTAL SKOR
                             </th>
                             
@@ -98,7 +94,7 @@ const MatrixTable = ({
                                 <th 
                                     rowSpan={2} 
                                     key={col.key} 
-                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                    className={headerBaseClasses} 
                                 >
                                     {col.label}
                                 </th>
@@ -107,11 +103,11 @@ const MatrixTable = ({
                         
                         <tr>                            
                             {dynamicHeaders.map(col => (
-                                <th key={col.key} className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider border-r border-gray-200">
+                                <th key={col.key} className={headerBaseClasses}>
                                     {col.label}
                                 </th>
                             ))}                            
-                            <th className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-bold text-white tracking-wider border-r border-gray-200">
+                            <th className="px-3 py-2 md:px-6 md:py-3 bg-primary text-center text-xs font-bold text-white tracking-wider">
                                 {totalWeekWeight}%
                             </th>                            
                         </tr>
@@ -131,7 +127,7 @@ const MatrixTable = ({
                                     </React.Fragment>
                                 ))}
                                 
-                                <td className="px-3 py-4 md:px-6 md:py-4 text-center font-bold">                                    
+                                <td className={`${cellBaseClasses} font-bold`}>                                    
                                     0% 
                                 </td>
                                 
@@ -148,14 +144,16 @@ const MatrixTable = ({
             </div>
             
             <div className="mt-4 flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 order-2 md:order-1">
                     Showing 1 to {data.length} of {data.length} entries
                 </span>
-                <Pagination
-                    totalPages={totalPages}
-                    currentPage={currentPage}
-                    onPageChange={onPageChange}
-                />
+                <div className="order-1 md:order-2">
+                    <Pagination
+                        totalPages={totalPages}
+                        currentPage={currentPage}
+                        onPageChange={onPageChange}
+                    />
+                </div>
             </div>
         </div>
     );

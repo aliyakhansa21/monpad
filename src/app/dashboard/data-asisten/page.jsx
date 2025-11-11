@@ -24,7 +24,7 @@ export default function DataAsistenPage() {
     const [asistenData, setAsistenData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const LARAVEL_API_BASE_URL = 'http://localhost:8000/api';
+    const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
 
     const fetchAsistenData = async () => {
         setIsLoading(true);
@@ -126,10 +126,8 @@ export default function DataAsistenPage() {
             } catch (error) {
                 console.error('Error saat menambahkan data:', error);
                 
-                // Asumsi Anda menggunakan Fetch API atau library serupa:
                 let errorMessage = "Terjadi kesalahan yang tidak diketahui.";
 
-                // Cek apakah error adalah objek Response dari fetch (jika menggunakan fetch)
                 if (error && error.status === 500) {
                     errorMessage = "Kesalahan Server Internal (500). Mohon hubungi tim Backend.";
                 } else if (error && error.message) {

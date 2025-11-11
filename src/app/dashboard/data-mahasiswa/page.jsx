@@ -21,15 +21,17 @@ export default function DataMahasiswaPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState('add'); // 'add' atau 'edit'
+    const [modalMode, setModalMode] = useState('add'); 
     const [selectedMahasiswa, setSelectedMahasiswa] = useState(null);
     const [mahasiswaData, setMahasiswaData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
+    
     const fetchMahasiwaData = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/backend/mahasiswa');
+            const response = await fetch(`${LARAVEL_API_BASE_URL}/mahasiswa`);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -79,7 +81,7 @@ export default function DataMahasiswaPage() {
         const id = mahasiswaToDelete.id;
 
         try {
-            const response = await fetch(`/api/backend/mahasiswa/${id}`, { 
+            const response = await fetch(`${LARAVEL_API_BASE_URL}/mahasiswa/${id}`, { 
                 method: 'DELETE',
             });
             if (response.ok) {
@@ -98,7 +100,7 @@ export default function DataMahasiswaPage() {
     const handleModalSubmit = async (formData) => { 
         if (modalMode === 'add') {
             try {
-                const response = await fetch('/api/backend/mahasiswa', {
+                const response = await fetch(`${LARAVEL_API_BASE_URL}/mahasiswa`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -128,16 +130,7 @@ export default function DataMahasiswaPage() {
                 alert(`Gagal menambahkan data: ${error.message}`);
             }
 
-        } else {
-            
-            // setMahasiswaData(prev => 
-            //     prev.map(item => 
-            //         item.id === selectedMahasiswa.id 
-            //             ? { ...item, ...formData }
-            //             : item
-            //     )
-            // );
-            
+        } else {            
             alert('Data berhasil diperbarui!');
         }
         setIsModalOpen(false); 
