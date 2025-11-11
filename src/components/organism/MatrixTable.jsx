@@ -22,21 +22,19 @@ const MatrixTable = ({
     totalWeekWeight, 
 }) => {
     
-    const cellBaseClasses = "px-3 py-2 md:px-6 md:py-4 text-center";
-    const headerBaseClasses = "px-3 py-2 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider";
-
     const renderCell = (item, column) => {
         if (column.key === 'aksi') {
             return (
-                <td className="px-1 py-2 md:px-6 md:py-4 text-center">
+                <td className="px-3 py-4 md:px-6 md:py-4 text-center">
                     <Button variant="icon-only-2" aria-label="Review/Tambah Nilai" onClick={() => onReview(item)}>
-                        <Icon name="filled-plus" size={24} className="md:size-30" /> 
+                        <Icon name="filled-plus" size={30} /> 
                     </Button>
                 </td>
             );
         }
 
         let value;
+
         if (column.render) {
             value = column.render(item);
         } 
