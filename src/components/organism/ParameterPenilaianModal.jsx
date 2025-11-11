@@ -7,15 +7,14 @@ import { Label } from '@/components/ui/label';
 import Select from 'react-select'; 
 import Input from '@/components/atoms/Input'; 
 import { Slider } from '@/components/ui/slider';
-
-const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
-
+import api from '@/lib/api'; 
 
 const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes, totalWeekWeight }) => {
     const [minggu, setMinggu] = useState(null);
     const [aspekList, setAspekList] = useState([]);
     const [bobotMinggu, setBobotMinggu] = useState(0); 
     const [newAspekInput, setNewAspekInput] = useState({ name: '', percentage: 0, id: null });
+    const [isSubmitting, setIsSubmitting] = useState(false);
         
     const bobotAspekAkumulasi = useMemo(() => {
         return aspekList.reduce((sum, aspek) => sum + aspek.percentage, 0);
@@ -43,7 +42,6 @@ const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes
 
     const handleSelectMingguChange = (selectedOption) => {
         setMinggu(selectedOption);
-        // console.log('Minggu dipilih:', selectedOption); 
     };
 
     const handleAspectSelect = (selectedOption) => {
@@ -124,53 +122,125 @@ const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes
             setAspekList([]);
             setBobotMinggu(0);
             setNewAspekInput({ name: '', percentage: 0, id: null });
+            setIsSubmitting(false);
         }
     }, [isOpen]);
     
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validasi bobot aspek
         if (bobotAspekAkumulasi !== 100) {
             alert(`Total bobot semua aspek harus mencapai 100%. Saat ini: ${bobotAspekAkumulasi}%.`);
             return;
         }
 
+        // Validasi total bobot mingguan
         if (newTotalWeight > 100) {
-            alert(`Gagal! Total melebihi 100%.`);
+            alert(`Gagal! Total bobot mingguan melebihi 100%.`);
             return;
         }
 
+        // Validasi bobot minggu
         if (bobotMinggu <= 0) {
             alert('Bobot minggu harus lebih dari 0%.');
             return;
         }
 
+        // Validasi minggu dipilih
         if (!minggu) {
             alert('Minggu ke- harus dipilih.');
             return;
         }
 
-        const aspekWithId = await Promise.all(aspekList.map(async (aspek) => {
-            if (aspek.id) return aspek; 
-            const res = await fetch(`${LARAVEL_API_BASE_URL}/grade-type`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: aspek.name,
-                    percentage: aspek.percentage,
-                }),
-            });
-            const data = await res.json();
-            return { ...aspek, id: data.data.id }; 
-        }));
+        // Ambil token di awal dan validasi
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert("Sesi tidak ditemukan. Mohon login ulang.");
+            window.location.href = '/login'; 
+            return;
+        }
 
-        const payload = {
-            name: minggu.label,
-            percentage: bobotMinggu,
-            grade_types: aspekWithId.map(a => a.id), 
-        };
-        await onSubmit(payload);
-        onClose();
+        setIsSubmitting(true);
+
+        try {
+            //Config header yang reusable
+            const authConfig = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            const aspekWithId = [];
+            
+            for (const aspek of aspekList) {
+                if (aspek.id) {
+                    // Jika sudah punya ID (re-use), langsung tambahkan
+                    aspekWithId.push(aspek);
+                } else {
+                    // POST Aspek baru ke /grade-type
+                    try {
+                        const res = await api.post('/grade-type', {
+                            name: aspek.name,
+                            percentage: aspek.percentage,
+                        }, authConfig); 
+                        
+                        const newAspekId = res.data.data.id;
+                        aspekWithId.push({ ...aspek, id: newAspekId });
+                        
+                        console.log(`✅ Aspek "${aspek.name}" berhasil disimpan dengan ID: ${newAspekId}`);
+                    } catch (error) {
+                        const status = error.response?.status || 'Network Error';
+                        const message = error.response?.data?.message || error.message;
+                        
+                        console.error(`❌ Gagal menyimpan aspek "${aspek.name}":`, error);
+                        
+                        if (status === 401) {
+                            alert(`Sesi Anda telah berakhir. Mohon login kembali.`);
+                            localStorage.removeItem('authToken');
+                            window.location.href = '/login';
+                        } else {
+                            alert(`Gagal menyimpan aspek "${aspek.name}". Status: ${status}. Pesan: ${message}`);
+                        }
+                        
+                        setIsSubmitting(false);
+                        return;
+                    }
+                }
+            }
+            
+            const payload = {
+                name: minggu.label,
+                percentage: bobotMinggu,
+                grade_types: aspekWithId.map(a => a.id), 
+            };
+            
+            console.log('📤 Mengirim payload week-type:', payload);            
+            await onSubmit(payload);
+            
+            setMinggu(null);
+            setAspekList([]);
+            setBobotMinggu(0);
+            setNewAspekInput({ name: '', percentage: 0, id: null });
+            onClose();
+
+        } catch (error) {
+            console.error('❌ Error saat menyimpan parameter:', error);
+            
+            const status = error.response?.status || 'Error';
+            const message = error.response?.data?.message || error.message;
+            
+            if (status === 401) {
+                alert(`Sesi Anda telah berakhir. Mohon login kembali.`);
+                localStorage.removeItem('authToken');
+                window.location.href = '/login';
+            } else {
+                alert(`Gagal menyimpan parameter penilaian. Status: ${status}. Pesan: ${message}`);
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const isAspectPercentageSliderDisabled = bobotAspekAkumulasi >= 100 || !newAspekInput.name || !!newAspekInput.id;
@@ -301,14 +371,22 @@ const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes
                         </div>
                     </div>
                     <DialogFooter className='mt-6 flex-col-reverse sm:flex-row sm:justify-end'>
-                        <Button type="button" variant='secondary' onClick={onClose} className="w-full sm:w-auto mt-2 sm:mt-0">Batal</Button>
+                        <Button 
+                            type="button" 
+                            variant='secondary' 
+                            onClick={onClose} 
+                            className="w-full sm:w-auto mt-2 sm:mt-0"
+                            disabled={isSubmitting}
+                        >
+                            Batal
+                        </Button>
                         <Button 
                             type="submit" 
                             variant="primary" 
-                            disabled={bobotAspekAkumulasi !== 100 || bobotMinggu <= 0 || !minggu || newTotalWeight > 100}
+                            disabled={bobotAspekAkumulasi !== 100 || bobotMinggu <= 0 || !minggu || newTotalWeight > 100 || isSubmitting}
                             className="w-full sm:w-auto"
                         >
-                            Simpan Parameter
+                            {isSubmitting ? 'Menyimpan...' : 'Simpan Parameter'}
                         </Button>
                     </DialogFooter>
                 </form>

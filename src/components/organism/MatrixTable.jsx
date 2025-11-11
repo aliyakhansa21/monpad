@@ -21,7 +21,8 @@ const MatrixTable = ({
     onPageChange, 
     totalWeekWeight, 
 }) => {
-    
+    const headerBaseClasses = "px-3 py-2 md:px-6 md:py-4 text-center font-medium text-white uppercase tracking-wider bg-primary";
+    const cellBaseClasses = "px-3 py-2 md:px-6 md:py-4 text-center text-sm text-gray-700 whitespace-nowrap";
     const renderCell = (item, column) => {
         if (column.key === 'aksi') {
             return (

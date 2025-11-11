@@ -10,25 +10,11 @@ const api = axios.create({
     }
 });
 
-// api.interceptors.request.use(
-//     (config) => {
-//         const token = localStorage.getItem('authToken'); 
-//         if (token) {
-//         config.headers['Authorization'] = `Bearer ${token}`;
-//         }
-//         return config;
-//     },
-//     (error) => {
-//         return Promise.reject(error);
-//     }
-// );
-
-const HARDCODED_TOKEN = '2|afZiSKjiErheHUDM4Un7525hm8TDl7wpomWkDOfdd15b7159'; 
-
 api.interceptors.request.use(
     (config) => {
-        if (HARDCODED_TOKEN) {
-        config.headers['Authorization'] = `Bearer ${HARDCODED_TOKEN}`;
+        const token = localStorage.getItem('authToken'); 
+        if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;
     },
