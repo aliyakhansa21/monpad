@@ -14,14 +14,14 @@ const PesertaCard = ({ presenceId, username, nim, jabatan, initialPresent, onTog
         setIsPresent(initialPresent);
     }, [initialPresent]);
     
-    const cardBorderClass = isPresent ? 'border-green-500' : 'border-gray-300';
+    const cardBorderClass = isPresent ? 'border-green-500' : 'border-primary';
     
     return (
         <div className={`bg-white p-4 border rounded-lg shadow-sm flex justify-between items-start transition-all duration-200 ${cardBorderClass}`}>
             <div className="flex-1 space-y-1">
-                <p className="font-semibold text-lg">{username}</p>
-                <p className="text-sm text-gray-600">NIM: {nim}</p>
-                <p className="text-xs text-purple-600 font-medium">{jabatan}</p>
+                <p className="text-base">{username}</p>
+                <p className="text-base">{nim}</p>
+                <p className="text-base">{jabatan}</p>
             </div>
             
             <div className="flex items-center space-x-2 mt-1">

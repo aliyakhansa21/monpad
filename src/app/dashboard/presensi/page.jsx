@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Select from 'react-select'; 
 import PropTypes from 'prop-types'; 
 import { AppSidebar } from "@/components/organism/app-sidebar";
@@ -33,8 +33,7 @@ export default function PresensiPage() {
     }, []);
 
     const fetchFilterData = useCallback(async () => {
-        if (!isLoggedIn) return;
-        
+        if (!isLoggedIn) return;        
         try {
             const [groupRes, meetingRes] = await Promise.all([
                 api.get('/group'), 
@@ -75,7 +74,7 @@ export default function PresensiPage() {
 
             const mappedData = response.data.data.map(item => ({
                 presence_id: item.presence_id, 
-                name: item.mahasiswa.username, 
+                username: item.mahasiswa.username, 
                 nim: item.mahasiswa.nim, 
                 jabatan: item.mahasiswa.jabatan, 
                 present: item.present, 
@@ -91,6 +90,19 @@ export default function PresensiPage() {
             setIsLoading(false);
         }
     }, [isLoggedIn]);
+    
+
+    const customStyles = useMemo(() => ({
+        control: (provided, state) => ({
+            ...provided,
+            borderColor: '#52357B', 
+            boxShadow: state.isFocused ? '0 0 0 1px #52357B' : 'none', 
+            borderColor: state.isFocused ? '#52357B' : provided.borderColor, 
+            '&:hover': {
+                borderColor: state.isFocused ? '#52357B' : provided.borderColor,
+            }
+        }),
+    }), []);
 
 
     const handleSimpanPresensi = useCallback(async () => {
@@ -157,7 +169,7 @@ export default function PresensiPage() {
                     <div className={`pl-6`}>
                         <DashboardHeader title="Presensi Peserta"/>                        
                         <main className="p-0 md:p-4">
-                            <div className="bg-white p-6 rounded-xl shadow-lg">                                
+                            <div className="p-6">                                
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">                                    
                                     {/* Pilih Kelompok */}
                                     <div>
@@ -168,6 +180,7 @@ export default function PresensiPage() {
                                             value={selectedGroup}
                                             placeholder="Memuat Kelompok..."
                                             classNamePrefix="react-select"
+                                            customStyles={customStyles}
                                             // isDisabled={groupOptions.length === 0}
                                         />
                                     </div>
@@ -203,7 +216,7 @@ export default function PresensiPage() {
                                                 <PesertaCard
                                                     key={peserta.presence_id}
                                                     presenceId={peserta.presence_id}
-                                                    name={peserta.name}
+                                                    username={peserta.username}
                                                     nim={peserta.nim}
                                                     jabatan={peserta.jabatan}
                                                     initialPresent={peserta.present}
@@ -218,7 +231,7 @@ export default function PresensiPage() {
                                 {participants.length > 0 && (
                                     <div className="flex justify-start space-x-4">
                                         <Button 
-                                            variant="secondary" 
+                                            variant="cancel"
                                             onClick={() => fetchPresensiData(selectedGroup.value, selectedMeeting.value)}
                                             disabled={isSubmitting}
                                         >
