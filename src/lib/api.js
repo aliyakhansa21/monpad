@@ -15,6 +15,9 @@ api.interceptors.request.use(
         const token = localStorage.getItem('authToken'); 
         if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
+        console.log("✅ Interceptor: Token terpasang ke header:", config.headers.Authorization);
+        } else {
+            console.log("⚠️ Interceptor: Token tidak ditemukan di localStorage.");
         }
         return config;
     },
