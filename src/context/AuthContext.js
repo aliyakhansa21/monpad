@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
                 }
             } else {
                 console.log("⚠️ Token tidak ditemukan atau tidak valid");
-                localStorage.removeItem('authToken'); // Hapus sisa token yang mungkin invalid
+                localStorage.removeItem('authToken'); 
                 setUser(null);
             }
         } catch (error) {
@@ -102,25 +102,86 @@ export function AuthProvider({ children }) {
             console.log("✅ Data User:", userData);
 
             localStorage.setItem('authToken', token);
-
             setUser({ 
                 ...(userData || {}), 
                 isLoggedIn: true, 
                 token 
             });
 
-            // Redirect ke matriks-nilai (sementara karena dashboard belum dibuat)
-            router.push('/dashboard/dosen');
-            
+            //const userRole = userData.role; 
+            // const userRole = userData.user?.role || userData.role; 
+
+            // Tambahkan ini untuk melihat semua properti user
+            // console.log("✅ USER OBJECT DENGAN ROLE:", userData.user);
+
+            const detectUserRole = async (token) => {
+                const headers = {Authorization: `Bearer ${token}`};
+                try {
+                    await apiAuth.get('/dosen', {headers});
+                    console.log("🔍 Role terdeteksi: dosen");
+                    return 'dosen';
+                } catch (e1) {
+                    console.log("🔍 Bukan dosen, mencoba asisten...");
+                }
+
+                try {
+                    await apiAuth.get('/week', {headers});
+                    console.log("🔍 Role terdeteksi: asisten");
+                    return 'asisten';
+                } catch (e2) {
+                    console.log("🔍 Bukan asisten, mencoba mahasiswa...");
+                }
+                return 'mahasiswa';
+            }
+
+            let userRole = userData.user?.role || userData.role;
+            let userProfile = userData.user || userData;
+
+            if (!userRole) {
+                console.log("Deketeksi role user lewat probing endpoint...");
+                
+                const roleString = await detectUserRole(token); 
+                userRole = roleString;                 
+                userProfile = { ...userProfile, role: userRole };
+            }
+
+            localStorage.setItem('authToken', token);
+
+            setUser({ 
+                ...(userProfile || {}), 
+                isLoggedIn: true, 
+                token 
+            });
+
+            let dashboardPath = '/dashboard/default'; 
+
+            switch (userRole) {
+                case 'dosen':
+                    dashboardPath = '/dashboard/dosen';
+                    break;
+                case 'asisten':
+                    dashboardPath = '/dashboard/asisten';
+                    break;
+                case 'mahasiswa':
+                    dashboardPath = '/dashboard/mahasiswa';
+                    break;
+                default:
+                    console.warn(`Role '${userRole}' tidak dikenali. Mengarahkan ke default.`);
+                    dashboardPath = '/login'; 
+                    break;
+            }
+
+            router.push(dashboardPath);            
             return response.data;
+
+            // // Redirect ke matriks-nilai (sementara karena dashboard belum dibuat)
+            // router.push('/dashboard/mahasiswa');
+            
         } catch (error) {
             console.error("❌ Login failed:", error);
-            console.error("❌ Error response:", error.response?.data);
-            
-            // Hapus token jika ada error
+            console.error("❌ Error response:", error.response?.data);            
             localStorage.removeItem('authToken');
             
-            // Throw error dengan pesan yang user-friendly
             if (error.message.includes('Format response')) {
                 throw error; 
             }
@@ -145,6 +206,9 @@ export function AuthProvider({ children }) {
         isLoggedIn: !!user, 
         login,
         logout,
+        userName: user?.name || 'Tamu',
+        userRole: user?.role || 'tamu',
+        userRoleTitle: user?.role_title || user?.role || 'Pengguna'
     }), [user, isLoading]);
 
     if (isLoading) {
