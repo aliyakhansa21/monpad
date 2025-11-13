@@ -73,6 +73,16 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+  
+  .custom-hex-hover {
+      transition: background-color 0.3s ease; 
+  }
+
+  .custom-hex-hover:hover {
+      background-color: var(--button-hover-color) !important; 
+  }
+
+
 
   * {
     @apply border-border;
