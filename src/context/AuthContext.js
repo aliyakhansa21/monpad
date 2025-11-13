@@ -110,7 +110,7 @@ export function AuthProvider({ children }) {
             });
 
             // Redirect ke matriks-nilai (sementara karena dashboard belum dibuat)
-            router.push('/dashboard/dosen');
+            router.push('/dashboard/mahasiswa');
             
             return response.data;
         } catch (error) {
