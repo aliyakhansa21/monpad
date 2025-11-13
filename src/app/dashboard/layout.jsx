@@ -7,7 +7,15 @@ import DashboardHeader from '@/components/organism/DashboardHeader';
 import Footer from "@/components/organism/Footer";
 
 export default function DashboardLayout({ children }) {
-    const { isLoggedIn, isLoading, user } = useAuth();
+    const { 
+        isLoggedIn, 
+        isLoading, 
+        user,
+        userName, 
+        userRole,
+        userRoleTitle
+    } = useAuth();
+
     const router = useRouter();    
     const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(true);
     const toggleSidebar = () => { setIsSidebarExpanded(prev => !prev); };
@@ -34,6 +42,9 @@ export default function DashboardLayout({ children }) {
                 <AppSidebar
                     isExpanded={isSidebarExpanded}
                     onToggle={toggleSidebar}
+                    userRole={userRole}
+                    userName={userName}
+                    userRoleTitle={userRoleTitle} 
                 />
             </div>
 
