@@ -21,7 +21,7 @@ const menus = {
     {title: "List Proyek", href: "/dashboard/list-proyek"},
     {title: "List Peserta", href: "/dashboard/list-peserta"},
     {title: "Presensi Peserta", href: "/dashboard/presensi"},
-    {title: "Penilaian Progres", href: "/dashboard/penilaian-progres"}, // Ditambahkan agar lengkap
+    {title: "Penilaian Progres", href: "/dashboard/penilaian-mingguan"}, // Ditambahkan agar lengkap
     {title: "Laporan Mingguan", href: "/dashboard/laporan-mingguan"},
   ],
   mahasiswa: [
