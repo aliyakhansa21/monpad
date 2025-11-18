@@ -4,7 +4,6 @@ import  Input  from "@/components/ui/input";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 
-// --- DEFINISI MENU BERDASARKAN PERAN PENGGUNA ---
 const menus = {
   dosen: [
     {title: "Beranda", href: "/dashboard/dosen"},
@@ -21,7 +20,7 @@ const menus = {
     {title: "List Proyek", href: "/dashboard/list-proyek"},
     {title: "List Peserta", href: "/dashboard/list-peserta"},
     {title: "Presensi Peserta", href: "/dashboard/presensi"},
-    {title: "Penilaian Progres", href: "/dashboard/penilaian-mingguan"}, // Ditambahkan agar lengkap
+    {title: "Penilaian Progres", href: "/dashboard/penilaian-progres"}, 
     {title: "Laporan Mingguan", href: "/dashboard/laporan-mingguan"},
   ],
   mahasiswa: [
@@ -31,7 +30,6 @@ const menus = {
     {title: "Nilai Akhir", href: "/dashboard/nilai-akhir"},
   ]
 };
-// --------------------------------------------------
 
 
 export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleTitle }) { 
@@ -41,7 +39,6 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
 
   return (
     <div className={`${sidebarWidthClass} bg-dark-purple text-white flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
-      {/* 1. HEADER & TOGGLE */}
       <div className={`flex items-center p-6 mb-4 ${isExpanded ? "justify-between" : "justify-center"}`}>
         {isExpanded && <h1 className="text-4xl font-bold ">MonPAD</h1>}
         <button 
@@ -53,7 +50,6 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
         </button>
       </div>
 
-      {/* 2. SEARCH (Hanya tampil saat expanded) */}
       {isExpanded && (
         <div className="relative mx-4 mb-4">
           <Input 
@@ -65,8 +61,6 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
         </div>
       )}
 
-      {/* 3. NAVIGASI UTAMA (Menu Items) */}
-      {/* PERAPATAN: Menyembunyikan seluruh nav saat !isExpanded */}
       <nav className={`flex-1 overflow-y-auto px-4 space-y-2 ${!isExpanded && 'hidden'}`}>         
         {currentItems.map((item) => (
           <Link
@@ -79,9 +73,8 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
           </Link>
         ))}
 
-        {/* Log Out Link (Flat) */}
         <Link
-          href="#" // Ganti dengan path atau fungsi Log Out yang sebenarnya
+          href="#" 
           className={`block py-2 rounded-md transition-colors pl-[16px] pr-2 mt-4 text-gray-200 hover:bg-dark-purple/80 border-t border-indigo-700/50 pt-3`}
         >
           <div className="flex items-center space-x-2">
@@ -91,14 +84,11 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
         </Link>
       </nav>
 
-      {/* 4. Tampilan Profil/Log Out saat Expanded */}
       {isExpanded && (
         <div className="p-4 border-t border-indigo-700 mt-auto flex items-center justify-between">
           <div className='flex items-center space-x-2'>
-            {/* Avatar Placeholder */}
             <div className='h-8 w-8 rounded-full bg-gray-400 flex-shrink-0'></div>
             <div>
-              {/* Data Dinamis */}
               <p className="font-semibold text-sm">{userName}</p>
               <p className="text-xs text-gray-400">{userRoleTitle}</p>
             </div>
@@ -109,8 +99,6 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
         </div>
       )}
       
-      {/* 5. Icon saat Collapsed (Home dan Log Out) */}
-      {/* PERAPATAN: Memisahkan bagian ini dengan garis di atas */}
       {!isExpanded && (
         <div className="flex flex-col items-center justify-center p-2 space-y-4 mt-auto mb-4 border-t border-indigo-700/50"> 
             <button aria-label="Beranda" className="p-1 rounded-full hover:bg-white/10 transition-colors">
