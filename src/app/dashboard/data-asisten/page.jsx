@@ -145,39 +145,22 @@ export default function DataAsistenPage() {
     const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]" ;
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Sidebar */}
-            <div className="fixed top-0 left-0 h-full z-10">
-                <AppSidebar
-                    isExpanded={isSidebarExpanded}
-                    onToggle={toggleSidebar}
-                />
-            </div>
-            {/* Main Content Area */}
-            <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
-                <div className='p-3 flex-1 bg-background-light'>
-                    <div className={'pl-6'}>
-                        <DashboardHeader title="Data Asisten" />
-                        <main className="p-4">
-                            <DataTable
-                                data={asistenData}
-                                columns={ASISTEN_COLUMNS}
-                                title="Data Asisten"
-                                onSearch={handleSearch}
-                                onAdd={handleAddData}
-                                onEdit={handleEditData}
-                                onDelete={onDeleteAsisten}
-                                totalPages={5}
-                                currentPage={currentPage}
-                                onPageChange={handlePageChange}
-                            />
-                                
-                        </main>
-                    </div>
-                </div>
-                <Footer/>
-            </div>
-
+        <>
+            <DashboardHeader title="Data Asisten" />
+            <main className="p-4">
+                <DataTable
+                    data={asistenData}
+                    columns={ASISTEN_COLUMNS}
+                    title="Data Asisten"
+                    onSearch={handleSearch}
+                    onAdd={handleAddData}
+                    onEdit={handleEditData}
+                    onDelete={onDeleteAsisten}
+                    totalPages={5}
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                />                
+            </main>
             <AsistenModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -185,6 +168,6 @@ export default function DataAsistenPage() {
                 initialData={selectedAsisten}
                 mode={modalMode}
             />
-        </div>
-    )
+        </>
+    );
 }

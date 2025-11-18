@@ -48,7 +48,6 @@ export default function MatriksNilaiPage() {
         } catch (error) {
             console.error("❌ Error fetching week types:", error.message);
             
-            // Jika error 401, biarkan interceptor global yang handle
             if (error.response?.status !== 401) {
                 alert("Gagal memuat struktur penilaian. Silakan refresh halaman.");
             }
@@ -74,7 +73,6 @@ export default function MatriksNilaiPage() {
         } catch (error) {
             console.error("❌ Error fetching grade types list:", error.message);
             
-            // Jika error 401, biarkan interceptor global yang handle
             if (error.response?.status !== 401) {
                 alert("Gagal memuat daftar aspek penilaian.");
             }            
@@ -121,13 +119,11 @@ export default function MatriksNilaiPage() {
     }, []);
 
     useEffect(() => {
-        // Hanya fetch data jika user sudah login dan auth loading sudah selesai
         if (isLoggedIn && !authLoading) {
             console.log("🔄 User logged in, fetching data...");
             fetchGradeTypesList();
             fetchMatrixData();
         } else if (!isLoggedIn && !authLoading) {
-            // Jika tidak login dan auth loading sudah selesai, redirect ke login
             console.log("⚠️ User not logged in, data fetch skipped");
         }
     }, [isLoggedIn, authLoading, fetchGradeTypesList, fetchMatrixData]);
@@ -223,43 +219,31 @@ export default function MatriksNilaiPage() {
     }
 
     return (
-        <div className="flex h-screen bg-background-light">
-            <div className="fixed z-50 md:z-30">
-                <AppSidebar isExpanded={isSidebarExpanded} onToggle={handleSidebarToggle}/>
-            </div>
-            
-            <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
-                <div className='p-3 flex-1 bg-background-light'>
-                    <div className={'p-4 md:pl-6'}>
-                        <DashboardHeader title="Matriks Nilai"/>                        
-                        <main className="p-0 md:p-4">
-                            <MatrixHeaderButton onClick={handleInputParameter} />                            
-                            {isLoading ? (
-                                <div className="flex justify-center items-center py-12">
-                                    <div className="text-center">
-                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mb-3 mx-auto"></div>
-                                        <p className="text-gray-600">Memuat data matriks...</p>
-                                    </div>
+        <>
+            <DashboardHeader title="Matriks Nilai"/>                        
+            <main className="p-0 md:p-4">
+                <MatrixHeaderButton onClick={handleInputParameter} />                            
+                    {isLoading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mb-3 mx-auto"></div>
+                                    <p className="text-gray-600">Memuat data matriks...</p>
                                 </div>
-                            ) : (
-                                <MatrixTable
-                                    data={gradeTypeData} 
-                                    columns={STATIC_COLUMNS}
-                                    totalWeekWeight={totalWeekWeight}
-                                    dynamicHeaders={dynamicHeaders}
-                                    onSearch={handleSearch}
-                                    onReview={handleReview}
-                                    totalPages={totalPages}
-                                    currentPage={currentPage}
-                                    onPageChange={handlePageChange}
-                                />
-                            )}
-                        </main>
-                    </div>
-                </div>
-                <Footer/>
-            </div>
-
+                            </div>
+                    ) : (
+                        <MatrixTable
+                            data={gradeTypeData} 
+                            columns={STATIC_COLUMNS}
+                            totalWeekWeight={totalWeekWeight}
+                            dynamicHeaders={dynamicHeaders}
+                            onSearch={handleSearch}
+                            onReview={handleReview}
+                            totalPages={totalPages}
+                            currentPage={currentPage}
+                            onPageChange={handlePageChange}
+                        />
+                    )}
+            </main>
             <ParameterPenilaianModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -267,6 +251,6 @@ export default function MatriksNilaiPage() {
                 existingGradeTypes={gradeTypesList}
                 totalWeekWeight={totalWeekWeight}
             />
-        </div>
+        </>
     );
 }

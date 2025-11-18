@@ -206,54 +206,38 @@ export default function DataProjectPage() {
     }, [projectData]);
 
     return (
-        <div className="flex h-screen bg-background-light">
-            {/* Sidebar */}
-            <div className="fixed z-50 md:z-30">
-                <AppSidebar
-                    isExpanded={isSidebarExpanded}
-                    onToggle={toggleSidebar}
-                />
-            </div>
-            {/* Main Content Area */}
-            <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
-                <div className="p-3 flex-1 bg-background-light">
-                    <div className={"pl-6"}>
-                        <DashboardHeader title="Proyek & Kelompok"/>
-                        <main className="p-4">
-                            {isLoading ? (
-                                <div className="flex justify-center items-center h-64">
-                                    {/* <p className="ml-2 text-gray-600">Memuat Data...</p> */}
-                                </div>
-                            ) : (
-                                <DataTable
-                                    data={processedData}
-                                    columns={PROJECT_COLUMNS}
-                                    title="Data Project"
-                                    onSearch={handleSearch}
-                                    onAdd={handleAddData}
-                                    onEdit={handleEditData}
-                                    onDelete={onDeleteProject}
-                                    totalPages={5} 
-                                    currentPage={currentPage}
-                                    onPageChange={handlePageChange}
-                                />
-                            )}
-                        </main>
+        <>
+            <DashboardHeader title="Proyek & Kelompok"/>
+                <main className="p-4">
+                    {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <p className="ml-2 text-gray-600">Memuat Data...</p>
                     </div>
-                </div>
-                <Footer/>
-            </div>
-
-            <ProjectModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSubmit={handleModalSubmit}
-                initialData={selectedProject}
-                mode={modalMode}
-                dosenList={dosenList}
-                asistenList={asistenList}
-            />
-        </div>
+                    ) : (
+                    <DataTable
+                        data={processedData}
+                        columns={PROJECT_COLUMNS}
+                        title="Data Project"
+                        onSearch={handleSearch}
+                        onAdd={handleAddData}
+                        onEdit={handleEditData}
+                        onDelete={onDeleteProject}
+                        totalPages={5} 
+                        currentPage={currentPage}
+                        onPageChange={handlePageChange}
+                    />
+                    )}
+                </main>
+                <ProjectModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSubmit={handleModalSubmit}
+                    initialData={selectedProject}
+                    mode={modalMode}
+                    dosenList={dosenList}
+                    asistenList={asistenList}
+                />
+        </>
     )
 
 }

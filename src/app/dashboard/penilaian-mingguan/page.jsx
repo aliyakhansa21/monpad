@@ -156,15 +156,7 @@ export default function PenilaianMingguanPage() {
     const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]";
 
     return (
-        <div className='flex top-col min-h-screen'>
-            {/* Sidebar */}
-            <div className='fixed top-0 left-0 h-full z-10'>
-                <AppSidebar
-                    isExpanded={isSidebarExpanded}
-                    onToggle={toggleSidebar}
-                />
-            </div>
-
+        <>
             {CURRENT_USER_ROLE === 'asisten' && (
                 <InputNilaiModal
                     isOpen={isModalOpen}
@@ -175,37 +167,29 @@ export default function PenilaianMingguanPage() {
                 />
             )}
 
-            {/* Main Content Area */}
-            <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
-                <div className='p-3 flex-1 bg-background-light'>
-                    <div className={'pl-6'}>                        
-                        <DashboardHeader title="Laporan Mingguan"/>                        
-                        <div className="p-4 flex items-center space-x-4">
-                            <MingguSelect 
-                                options={mingguOptions} 
-                                selectedMinggu={selectedMinggu} 
-                                onMingguChange={setSelectedMinggu}
-                                isLoading={isLoadingMinggu}
-                            /> 
-                        </div>                        
-                        <main className='p-4'>
-                            <PenilaianMingguanTable
-                                data={filteredData}
-                                gradeTypes={gradeTypes}
-                                onSearch={handleSearch}                                
-                                onReview={handleReview}
-                                userRole={CURRENT_USER_ROLE}
-                                isLoading={isLoadingAssessment || isLoadingMinggu}
-                                totalPages={1} 
-                                currentPage={1}
-                                onPageChange={handlePageChange}
-                                totalWeekWeight={100}
-                            />
-                        </main>
-                    </div>
-                </div>
-                <Footer/>
-            </div>
-        </div>
+            <DashboardHeader title="Laporan Mingguan"/>                        
+            <div className="p-4 flex items-center space-x-4">
+                <MingguSelect 
+                    options={mingguOptions} 
+                    selectedMinggu={selectedMinggu} 
+                    onMingguChange={setSelectedMinggu}
+                    isLoading={isLoadingMinggu}
+                /> 
+            </div>                        
+            <main className='p-4'>
+                <PenilaianMingguanTable
+                    data={filteredData}
+                    gradeTypes={gradeTypes}
+                    onSearch={handleSearch}                                
+                    onReview={handleReview}
+                    userRole={CURRENT_USER_ROLE}
+                    isLoading={isLoadingAssessment || isLoadingMinggu}
+                    totalPages={1} 
+                    currentPage={1}
+                    onPageChange={handlePageChange}
+                    totalWeekWeight={100}
+                />
+            </main>
+        </>
     );
 }

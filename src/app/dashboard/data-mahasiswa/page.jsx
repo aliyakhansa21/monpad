@@ -140,39 +140,22 @@ export default function DataMahasiswaPage() {
     const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]";
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Sidebar */}
-            <div className="fixed top-0 left-0 h-full z-10">
-                <AppSidebar
-                    isExpanded={isSidebarExpanded}
-                    onToggle={toggleSidebar}
+        <>
+            <DashboardHeader title="Data Mahasiswa"/>
+            <main className="p-4">
+                <DataTable
+                    data={mahasiswaData}
+                    columns={MAHASISWA_COLUMNS}
+                    title="Data Mahasiswa"
+                    onSearch={handleSearch}
+                    onAdd={handleAddData}
+                    onEdit={handleEditData}
+                    onDelete={onDeleteMahasiswa}
+                    totalPages={5}
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
                 />
-            </div>
-            {/* Main Content Area*/}
-            <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
-                <div className='p-3 flex-1 bg-background-light'>
-                    <div className={`pl-6`}>
-                        <DashboardHeader title="Data Mahasiswa"/>
-                        <main className="p-4">
-                            <DataTable
-                                data={mahasiswaData}
-                                columns={MAHASISWA_COLUMNS}
-                                title="Data Mahasiswa"
-                                onSearch={handleSearch}
-                                onAdd={handleAddData}
-                                onEdit={handleEditData}
-                                onDelete={onDeleteMahasiswa}
-                                totalPages={5}
-                                currentPage={currentPage}
-                                onPageChange={handlePageChange}
-                            />
-                        </main>
-                    </div>
-                    
-                </div>
-                <Footer />
-            </div>
-
+            </main>
             <MahasiswaModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -180,6 +163,6 @@ export default function DataMahasiswaPage() {
                 initialData={selectedMahasiswa}
                 mode={modalMode}
             />
-        </div>
+        </>
     );
 }

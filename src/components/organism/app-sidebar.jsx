@@ -13,7 +13,7 @@ const menus = {
     {title: "Nilai Individu Mahasiswa", href: "/dashboard/nilai-individu-mahasiswa"},
     {title: "Proyek & Kelompok", href: "/dashboard/data-proyek"},
     {title: "Matriks Nilai", href: "/dashboard/matriks-nilai"},
-    {title: "Laporan Progres", href: "/dashboard/laporan-progres"},
+    {title: "Laporan Progres", href: "/dashboard/penilaian-progres"},
   ],
   asisten: [
     {title: "Beranda", href: "/dashboard/asisten"},
@@ -21,7 +21,7 @@ const menus = {
     {title: "List Peserta", href: "/dashboard/list-peserta"},
     {title: "Presensi Peserta", href: "/dashboard/presensi"},
     {title: "Penilaian Progres", href: "/dashboard/penilaian-progres"}, 
-    {title: "Laporan Mingguan", href: "/dashboard/laporan-mingguan"},
+    {title: "Laporan Mingguan", href: "/dashboard/penilaian-mingguan"},
   ],
   mahasiswa: [
     {title: "Beranda", href: "/dashboard/mahasiswa"},

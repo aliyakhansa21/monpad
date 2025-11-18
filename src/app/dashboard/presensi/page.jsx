@@ -40,14 +40,13 @@ export default function PresensiPage() {
                 api.get('/week'),   
             ]);
 
-            // Mapping Kelompok (Ambil id dan nama)
             const mappedGroups = groupRes.data.data.map(item => ({
                 value: item.id,
                 label: item.nama || `Kelompok ${item.id}`, 
             }));
             
             const mappedMeetings = meetingRes.data.data.map((item, index) => ({
-                value: item.id, // ID Pertemuan/Week
+                value: item.id, 
                 label: `Pertemuan ke-${index + 1} (${item.date ? item.date.substring(0, 10) : 'Tanggal tidak tersedia'})`, 
             }));
 
@@ -154,104 +153,87 @@ export default function PresensiPage() {
 
 
     return (
-        <div className='flex flex-col min-h-screen bg-background-light'>
-            {/* Sidebar */}
-            <div className='fixed top-0 left-0 h-full z-20'>
-                <AppSidebar
-                    isExpanded={isSidebarExpanded}
-                    onToggle={toggleSidebar}
-                />
-            </div>
-
-            {/* Main Content Area */}
-            <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>                
-                <div className='p-3 flex-1'>
-                    <div className={`pl-6`}>
-                        <DashboardHeader title="Presensi Peserta"/>                        
-                        <main className="p-0 md:p-4">
-                            <div className="p-6">                                
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">                                    
-                                    {/* Pilih Kelompok */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Kelompok</label>
-                                        <Select
-                                            options={groupOptions}
-                                            onChange={setSelectedGroup}
-                                            value={selectedGroup}
-                                            placeholder="Memuat Kelompok..."
-                                            classNamePrefix="react-select"
-                                            customStyles={customStyles}
-                                            // isDisabled={groupOptions.length === 0}
-                                        />
-                                    </div>
-                                    
-                                    {/* Pilih Pertemuan */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Pertemuan</label>
-                                        <Select
-                                            options={meetingOptions}
-                                            onChange={setSelectedMeeting}
-                                            value={selectedMeeting}
-                                            placeholder="Memuat Pertemuan..."
-                                            classNamePrefix="react-select"
-                                            // isDisabled={meetingOptions.length === 0}
-                                        />
-                                    </div>
-                                </div>
-                                
-                                {/* Daftar Peserta */}
-                                {isLoading ? (
-                                    <div className='text-center py-10'>
-                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mb-3 mx-auto"></div>
-                                        <p className="text-gray-600">Memuat data peserta...</p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                        {participants.length === 0 && (selectedGroup || selectedMeeting) ? (
-                                            <p className="text-gray-500 md:col-span-2 text-center py-10">Tidak ada data peserta ditemukan untuk filter ini.</p>
-                                        ) : participants.length === 0 && !(selectedGroup || selectedMeeting) ? (
-                                            <p className="text-gray-500 md:col-span-2 text-center py-10">Silakan pilih Kelompok dan Pertemuan untuk menampilkan peserta.</p>
-                                        ) : (
-                                            participants.map(peserta => (
-                                                <PesertaCard
-                                                    key={peserta.presence_id}
-                                                    presenceId={peserta.presence_id}
-                                                    username={peserta.username}
-                                                    nim={peserta.nim}
-                                                    jabatan={peserta.jabatan}
-                                                    initialPresent={peserta.present}
-                                                    onTogglePresensi={handleTogglePresensi}
-                                                />
-                                            ))
-                                        )}
-                                    </div>
-                                )}
-                                
-                                {/* Tombol Aksi */}
-                                {participants.length > 0 && (
-                                    <div className="flex justify-start space-x-4">
-                                        <Button 
-                                            variant="cancel"
-                                            onClick={() => fetchPresensiData(selectedGroup.value, selectedMeeting.value)}
-                                            disabled={isSubmitting}
-                                        >
-                                            Batalkan (Reset Perubahan)
-                                        </Button>
-                                        <Button 
-                                            variant="primary" 
-                                            onClick={handleSimpanPresensi}
-                                            disabled={isSubmitting}
-                                        >
-                                            {isSubmitting ? 'Menyimpan...' : 'Simpan Presensi'}
-                                        </Button>
-                                    </div>
-                                )}
+        <>
+            <DashboardHeader title="Presensi Peserta"/>                        
+            <main className="p-0 md:p-4">
+                <div className="p-6">                                
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">                                    
+                        {/* Pilih Kelompok */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Kelompok</label>
+                            <Select
+                                options={groupOptions}
+                                onChange={setSelectedGroup}
+                                value={selectedGroup}
+                                placeholder="Memuat Kelompok..."
+                                classNamePrefix="react-select"
+                                customStyles={customStyles}
+                                // isDisabled={groupOptions.length === 0}
+                            />
+                        </div>                                    
+                            {/* Pilih Pertemuan */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Pertemuan</label>
+                                <Select
+                                    options={meetingOptions}
+                                    onChange={setSelectedMeeting}
+                                    value={selectedMeeting}
+                                    placeholder="Memuat Pertemuan..."
+                                    classNamePrefix="react-select"
+                                    // isDisabled={meetingOptions.length === 0}
+                                />
                             </div>
-                        </main>
                     </div>
-                </div>            
-                <Footer/>
-            </div>
-        </div>
-    )
+                                
+                    {/* Daftar Peserta */}
+                    {isLoading ? (
+                        <div className='text-center py-10'>
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mb-3 mx-auto"></div>
+                                <p className="text-gray-600">Memuat data peserta...</p>
+                            </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            {participants.length === 0 && (selectedGroup || selectedMeeting) ? (
+                                <p className="text-gray-500 md:col-span-2 text-center py-10">Tidak ada data peserta ditemukan untuk filter ini.</p>
+                            ) : participants.length === 0 && !(selectedGroup || selectedMeeting) ? (
+                                <p className="text-gray-500 md:col-span-2 text-center py-10">Silakan pilih Kelompok dan Pertemuan untuk menampilkan peserta.</p>
+                            ) : (
+                                participants.map(peserta => (
+                                    <PesertaCard
+                                        key={peserta.presence_id}
+                                        presenceId={peserta.presence_id}
+                                        username={peserta.username}
+                                        nim={peserta.nim}
+                                        jabatan={peserta.jabatan}
+                                        initialPresent={peserta.present}
+                                        onTogglePresensi={handleTogglePresensi}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    )}
+                                
+                    {/* Tombol Aksi */}
+                    {participants.length > 0 && (
+                        <div className="flex justify-start space-x-4">
+                            <Button 
+                                variant="cancel"
+                                onClick={() => fetchPresensiData(selectedGroup.value, selectedMeeting.value)}
+                                disabled={isSubmitting}
+                            >
+                                Batalkan (Reset Perubahan)
+                            </Button>
+                            <Button 
+                                variant="primary" 
+                                onClick={handleSimpanPresensi}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Menyimpan...' : 'Simpan Presensi'}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </main>
+        </>
+    );
 }
