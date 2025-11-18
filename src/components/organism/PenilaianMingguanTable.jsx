@@ -24,6 +24,7 @@ const PenilaianMingguanTable = ({
     
     const IS_ASSISTANT = userRole === 'asisten';
     
+    // BUTUH DIPERBAIKI (TANYA JIBRIL)
     const staticColumns = useMemo(() => [
         { key: 'kelompok', label: 'KELOMPOK', apiPath: 'project.group_name' }, 
         { key: 'namaProyek', label: 'NAMA PROYEK', apiPath: 'project.name' },
@@ -52,21 +53,12 @@ const PenilaianMingguanTable = ({
         return total.toFixed(2);
     };
     
-    const renderCell = (item, column) => {
-        const value = getNestedValue(item, column.apiPath);
-        return (
-            <td className="px-3 py-4 md:px-6 md:py-4 text-center whitespace-nowrap">
-                {value || '-'}
-            </td>
-        );
-    };
-
     const renderDynamicCell = (item, header) => {
-        const gradeObj = item.grades?.find(g => g.grade_type_id === header.gradeTypeId);
-        const value = gradeObj ? parseFloat(gradeObj.grade).toFixed(2) : 0;
+        const gradeObj = item.grades?.find(g => g.grade_type.id === header.gradeTypeId);
+        const value = gradeObj ? parseFloat(gradeObj.grade).toFixed(0) : 0;
         
         return (
-            <td className="px-3 py-4 md:px-6 md:py-4 text-center">
+            <td className="px-3 py-4 md:px-6 md:py-4 text-center text-sm">
                 {value}
             </td>
         );
@@ -75,16 +67,17 @@ const PenilaianMingguanTable = ({
     const renderTotalScoreCell = (item) => {
         const totalScore = calculateTotalScore(item);
         return (
-            <td className="px-3 py-4 md:px-6 md:py-4 text-center font-bold text-lg text-purple-700">
+            <td className="px-3 py-4 md:px-6 md:py-4 text-center font-bold text-lg text-purple-700 whitespace-nowrap">
                 {totalScore}
             </td>
         );
     };
 
     const renderNotesCell = (item) => {
+        const displayNote = item.notes || item.review?.note || 'Catatan di sini';
         return (
-            <td className="px-3 py-4 md:px-6 md:py-4 text-center max-w-xs truncate">
-                {item.notes || '-'}
+            <td className="px-3 py-4 md:px-6 md:py-4 text-center max-w-xs truncate text-sm">
+                {displayNote}
             </td>
         );
     };
@@ -121,8 +114,6 @@ const PenilaianMingguanTable = ({
         );
     }
 
-    console.log("Data yang dirender di tabel:", displayData);
-
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">                 
@@ -136,11 +127,11 @@ const PenilaianMingguanTable = ({
                     {IS_ASSISTANT && (
                         <Button 
                             onClick={onReview} 
-                            variant="icon-only-2" 
+                            variant="icon-only" 
                             aria-label="Tambah Nilai Baru"
-                            className="bg-purple-600 text-white rounded-md p-2 shadow-lg transition duration-150"
+                            className="bg-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition duration-150"
                         >
-                            <Icon name="filled-plus" size={30} /> 
+                            <Icon name="filled-plus" size={24} /> 
                         </Button>
                     )}
                 </div>
@@ -150,11 +141,12 @@ const PenilaianMingguanTable = ({
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
+                            {/* Kolom Statis (Kelompok & Nama Proyek) */}
                             {staticColumns.map(col => (
                                 <th 
                                     rowSpan={2} 
                                     key={col.key} 
-                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-left text-xs font-medium text-white uppercase tracking-wider"
                                 >
                                     {col.label}
                                 </th>
@@ -162,32 +154,32 @@ const PenilaianMingguanTable = ({
                             
                             <th 
                                 colSpan={dynamicHeaders.length} 
-                                className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
                                 PENILAIAN
                             </th>
                             
                             <th 
                                 rowSpan={2} 
-                                className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
                                 TOTAL SKOR
                             </th>
                             
-                            {/* Kolom Catatan */}
                             <th 
                                 rowSpan={2} 
-                                className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
                                 CATATAN
                             </th>
                         </tr>
                         
+                        {/* Header Dinamis (Aspek Penilaian) */}
                         <tr>                            
                             {dynamicHeaders.map(col => (
                                 <th 
                                     key={col.key} 
-                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white tracking-wider"
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white tracking-wider whitespace-nowrap"
                                 >
                                     {col.label}
                                 </th>
@@ -200,18 +192,24 @@ const PenilaianMingguanTable = ({
                                 key={item.id} 
                                 className={index % 2 === 0 ? 'bg-white' : 'bg-purple-50/30 hover:bg-purple-50/50'}
                             >
+                                {/* Kolom Statis */}
                                 {staticColumns.map(column => (
                                     <React.Fragment key={column.key}>
-                                        {renderCell(item, column)}
+                                        <td className="px-3 py-4 md:px-6 md:py-4 text-left whitespace-nowrap text-sm">
+                                            {getNestedValue(item, column.apiPath) || '-'}
+                                        </td>
                                     </React.Fragment>
                                 ))}
 
+                                {/* Kolom Dinamis (Aspek Penilaian) */}
                                 {dynamicHeaders.map(header => (
                                     <React.Fragment key={header.key}>
                                         {renderDynamicCell(item, header)}
                                     </React.Fragment>
                                 ))}                                
+                                {/* Total Skor */}
                                 {renderTotalScoreCell(item)}                                
+                                {/* Catatan */}
                                 {renderNotesCell(item)}
                             </tr>
                         ))}

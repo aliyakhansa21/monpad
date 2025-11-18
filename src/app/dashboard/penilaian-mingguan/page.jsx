@@ -6,14 +6,35 @@ import DashboardHeader from '@/components/organism/DashboardHeader';
 import Footer from "@/components/organism/Footer";
 import MingguSelect from '@/components/molecules/MingguSelect'; 
 import InputNilaiModal from '@/components/organism/InputNilaiModal';
+import api from '@/lib/api'; 
 
 const CURRENT_USER_ROLE = 'asisten'; 
-const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api'; 
+
+const extractUniqueProjects = (allWeeks) => {
+    const uniqueProjectsMap = new Map();
+    
+    allWeeks.forEach(week => {
+        const project = week.project; // Asumsi relasi project ada di objek week
+        
+        if (project && project.id && !uniqueProjectsMap.has(project.id)) {
+            
+            // Format data yang dibutuhkan modal
+            uniqueProjectsMap.set(project.id, {
+                id: project.id.toString(),
+                name: project.name || project.nama_proyek || `Proyek #${project.id}`,
+                // Asumsi group_name ada di sini atau harus diambil dari relasi groups jika ada
+                group_name: project.group_name || 'Tidak ada kelompok', 
+            });
+        }
+    });
+
+    return Array.from(uniqueProjectsMap.values());
+};
 
 export default function PenilaianMingguanPage() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const [penilaianData, setPenilaianData] = useState([]);
-    const [gradeTypes, setGradeTypes] = useState([]);
+    const [gradeTypes, setGradeTypes] = useState([]); 
     const [searchTerm, setSearchTerm] = useState('');    
     const [mingguOptions, setMingguOptions] = useState([]); 
     const [weekTypeList, setWeekTypeList] = useState([]); 
@@ -21,105 +42,86 @@ export default function PenilaianMingguanPage() {
     const [selectedMinggu, setSelectedMinggu] = useState('');     
     const [isLoadingAssessment, setIsLoadingAssessment] = useState(false);     
     const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [allProjectsData, setAllProjectsData] = useState([]); 
     const toggleSidebar = () => { setIsSidebarExpanded(prev => !prev); };
 
-    useEffect(() => {
-        const fetchWeekTypes = async () => {
-            setIsLoadingMinggu(true);
-            try {
-                const response = await fetch(`${LARAVEL_API_BASE_URL}/week-type`); 
-                
-                if (!response.ok) {
-                    console.error(`Gagal fetch daftar minggu. Status: ${response.status}`);
-                    return;
-                }
-                
-                const result = await response.json();
-                const weekTypes = result.data || [];
 
-                console.log("WeekTypes dari API:", weekTypes);                
-                setWeekTypeList(weekTypes);
-
-                const options = weekTypes.map(wt => ({ 
-                    value: wt.id.toString(), 
-                    label: wt.name || `Minggu ${wt.id}` 
-                }));
-                setMingguOptions(options);
-
-                if (options.length > 0) {
-                    setSelectedMinggu(options[0].value);                    
-                    if (weekTypes[0].grade_types) {
-                        setGradeTypes(weekTypes[0].grade_types);
-                    }
-                }
-                
-            } catch (error) {
-                console.error("Gagal mengambil data WeekType:", error);
-            } finally {
-                setIsLoadingMinggu(false);
-            }
-        };
-        fetchWeekTypes();
-    }, []);
-
-    useEffect(() => {
-        if (selectedMinggu && weekTypeList.length > 0) {
-            const selectedWeekType = weekTypeList.find(wt => wt.id.toString() === selectedMinggu);
-            if (selectedWeekType && selectedWeekType.grade_types) {
-                setGradeTypes(selectedWeekType.grade_types);
-            }
-        }
-    }, [selectedMinggu, weekTypeList]);
-
-    const fetchPenilaianData = useCallback(async (weekTypeId) => {
-        if (!weekTypeId) return;
-        
+    const fetchAllWeeksAndExtractTypes = async () => {
+        setIsLoadingMinggu(true);
         setIsLoadingAssessment(true);
-        console.log("Fetching penilaian untuk week_type_id:", weekTypeId);
         
-        try {            
-            const response = await fetch(`${LARAVEL_API_BASE_URL}/week`);
-            
-            if (!response.ok) {
-                console.error(`Gagal mengambil data penilaian. Status: ${response.status}`);
-                setPenilaianData([]);
-                return;
-            }
-            
-            const result = await response.json();
-            const allWeeks = result.data || [];
+        try {
+            const response = await api.get("/week"); 
+            const allWeeks = response.data.data || [];
+            setPenilaianData(allWeeks);
 
-            console.log("All weeks dari API:", allWeeks);
+            // 1. Ekstrak Proyek dan Kelompok Unik (untuk Modal)
+            const projects = extractUniqueProjects(allWeeks);
+            setAllProjectsData(projects);
             
-            const filteredWeeks = allWeeks.filter(week => {                
-                const idToMatch = week.week_type?.id || week.week_type_id;                 
-                return idToMatch && idToMatch.toString() === weekTypeId.toString();
+            // 2. Ekstrak WeekType yang unik (untuk Dropdown Minggu)
+            const uniqueWeekTypesMap = new Map();
+            allWeeks.forEach(week => {
+                const weekType = week.week_type;
+                if (weekType && !uniqueWeekTypesMap.has(weekType.id)) {
+                    uniqueWeekTypesMap.set(weekType.id, weekType);
+                }
             });
 
-            console.log("Filtered weeks untuk week_type_id", weekTypeId, ":", filteredWeeks);
-            
-            setPenilaianData(filteredWeeks);
+            const uniqueWeekTypes = Array.from(uniqueWeekTypesMap.values());
+            setWeekTypeList(uniqueWeekTypes);
 
+            const options = uniqueWeekTypes.map(wt => ({ 
+                value: wt.id.toString(), 
+                label: wt.name || `Minggu ${wt.id}` 
+            }));
+            setMingguOptions(options);
+
+
+            // 3. Ekstrak Grade Type unik (untuk Header Kolom)
+            const uniqueGradeTypesMap = new Map();
+            allWeeks.forEach(week => {
+                week.grades?.forEach(grade => {
+                    const gradeType = grade.grade_type;
+                    if (gradeType && !uniqueGradeTypesMap.has(gradeType.id)) {
+                        uniqueGradeTypesMap.set(gradeType.id, gradeType);
+                    }
+                });
+            });
+
+            const allUniqueGradeTypes = Array.from(uniqueGradeTypesMap.values());
+            allUniqueGradeTypes.sort((a, b) => a.id - b.id); 
+            setGradeTypes(allUniqueGradeTypes);
+
+            // 4. Set default selected minggu
+            if (options.length > 0) {
+                const defaultSelectedId = options[0].value;
+                setSelectedMinggu(defaultSelectedId);                    
+            } else {
+                setSelectedMinggu(''); 
+                setGradeTypes([]); 
+            }
+            
         } catch (error) {
-            console.error("Gagal mengambil data penilaian:", error);
+            console.error("Gagal mengambil data Weeks:", error.response?.status, error.message);
             setPenilaianData([]);
+            setMingguOptions([]);
+            setWeekTypeList([]);
+            setGradeTypes([]);
+            setAllProjectsData([]); 
         } finally {
+            setIsLoadingMinggu(false);
             setIsLoadingAssessment(false);
         }
+    };
+    
+    useEffect(() => {
+        fetchAllWeeksAndExtractTypes();
     }, []);
 
-    useEffect(() => {
-        if (selectedMinggu) {
-            fetchPenilaianData(selectedMinggu);
-        }
-    }, [selectedMinggu, fetchPenilaianData]);
-
-    // Handlers
     const handleSaveSuccess = () => {
         setIsModalOpen(false);
-        if (selectedMinggu) {
-            fetchPenilaianData(selectedMinggu);
-        }
+        fetchAllWeeksAndExtractTypes(); 
     };
 
     const handleReview = () => {
@@ -138,11 +140,17 @@ export default function PenilaianMingguanPage() {
         console.log('Pindah ke halaman:', page); 
     };
 
+    // Filter Data
     const filteredData = useMemo(() => {
-        if (!searchTerm) return penilaianData;
+        const dataByWeek = penilaianData.filter(item => {                
+            const idToMatch = item.week_type?.id || item.week_type_id;                 
+            return idToMatch && idToMatch.toString() === selectedMinggu.toString();
+        });
+
+        if (!searchTerm) return dataByWeek;
         
         const lowerSearch = searchTerm.toLowerCase();
-        return penilaianData.filter(item => {
+        return dataByWeek.filter(item => {
             const projectName = item.project?.name?.toLowerCase() || '';
             const groupName = item.project?.group_name?.toLowerCase() || '';
             const notes = item.notes?.toLowerCase() || '';
@@ -151,9 +159,9 @@ export default function PenilaianMingguanPage() {
                 groupName.includes(lowerSearch) || 
                 notes.includes(lowerSearch);
         });
-    }, [penilaianData, searchTerm]);
+    }, [penilaianData, searchTerm, selectedMinggu]); 
 
-    const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]";
+    const currentWeekType = weekTypeList.find(wt => wt.id.toString() === selectedMinggu);
 
     return (
         <>
@@ -163,7 +171,9 @@ export default function PenilaianMingguanPage() {
                     onClose={() => setIsModalOpen(false)}
                     onSaveSuccess={handleSaveSuccess}
                     gradeTypes={gradeTypes}
-                    weekTypeId={selectedMinggu ? parseInt(selectedMinggu) : null}
+                    weekTypeId={currentWeekType ? parseInt(currentWeekType.id) : null} 
+                    projectsData={allProjectsData} 
+                    isLoadingProjects={isLoadingMinggu || isLoadingAssessment} 
                 />
             )}
 
@@ -178,12 +188,12 @@ export default function PenilaianMingguanPage() {
             </div>                        
             <main className='p-4'>
                 <PenilaianMingguanTable
-                    data={filteredData}
-                    gradeTypes={gradeTypes}
+                    data={filteredData} 
+                    gradeTypes={gradeTypes} 
                     onSearch={handleSearch}                                
                     onReview={handleReview}
                     userRole={CURRENT_USER_ROLE}
-                    isLoading={isLoadingAssessment || isLoadingMinggu}
+                    isLoading={isLoadingAssessment || isLoadingMinggu} 
                     totalPages={1} 
                     currentPage={1}
                     onPageChange={handlePageChange}
