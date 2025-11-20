@@ -26,7 +26,7 @@ const menus = {
   mahasiswa: [
     {title: "Beranda", href: "/dashboard/mahasiswa"},
     {title: "Progres Proyek", href: "/dashboard/progres-proyek"},
-    {title: "Nilai Anggota Tim", href: "/dashboard/nilai-anggota"},
+    {title: "Nilai Anggota Tim", href: "/dashboard/penilaian-anggota"},
     {title: "Nilai Akhir", href: "/dashboard/nilai-akhir"},
   ]
 };
