@@ -8,12 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 export default function Login() {
     const { login } = useAuth();
     
-    // console.log()
     const router = useRouter();
     const [formData, setFormData] = useState({
-        username: '',
         email: '',
-        role: '',
         password: '',
         remember: false
     });
@@ -31,7 +28,6 @@ export default function Login() {
         try {
             console.log('Ini masuk')
             const cek = await login({
-                username: formData.username,
                 email: formData.email,
                 password: formData.password,
             });
@@ -69,19 +65,6 @@ export default function Login() {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-                    {/* Nama */}
-                    <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nama</label>
-                        <input
-                            type="text"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            placeholder="Masukkan Nama"
-                            className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-primary rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm sm:text-base"
-                            required
-                        />
-                    </div>
                     
                     {/* Email */}
                     <div>
@@ -95,23 +78,6 @@ export default function Login() {
                             className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-primary rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm sm:text-base"
                             required
                         />
-                    </div>
-
-                    {/* Role */}
-                    <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Role</label>
-                        <select
-                            name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-primary rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all appearance-none bg-white cursor-pointer text-sm sm:text-base"
-                            required
-                        >
-                            <option value="">Dosen/Asisten/Mahasiswa</option>
-                            <option value="dosen">Dosen</option>
-                            <option value="asisten">Asisten</option>
-                            <option value="mahasiswa">Mahasiswa</option>
-                        </select>
                     </div>
 
                     {/* Password */}
