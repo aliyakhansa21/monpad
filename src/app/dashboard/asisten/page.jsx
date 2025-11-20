@@ -1,19 +1,57 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react'; 
 import DashboardHeader from '@/components/organism/DashboardHeader';
 import { useAuth } from '@/context/AuthContext'; 
 import StatCard from '@/components/molecules/StatCard';
 import NavCardAsisten from '@/components/molecules/NavCardAsisten';
+import api from '@/lib/api';
 
 export default function DashboardAsistenPage() {
     const { user } = useAuth();
+    const [stats, setStats] = useState({
+        jumlah_mahasiswa: '...',
+        rata_rata: '...',
+    });
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setIsLoading(true);
+            try {
+                const response = await api.get('/dashboard/asisten');                 
+                const apiData = response.data.data;
+
+                setStats({
+                    jumlah_mahasiswa: apiData.jumlah_mahasiswa || 0,
+                    rata_rata: apiData.rata_rata || "0%", 
+                });
+                setIsLoading(false);
+            } catch (err) {
+                console.error("Error fetching Asisten dashboard data:", err);
+                setError(err.response?.data?.message || "Gagal memuat data dashboard. Token mungkin invalid.");
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    if (isLoading) {
+        return <div className="p-4 text-center">Memuat data statistik...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-center text-red-600">Error: {error}</div>;
+    }
+    
     return (
         <>
             <DashboardHeader title={`Dashboard Asisten`}/>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
                 <StatCard
                     title="Jumlah Mahasiswa"
-                    value={100}
+                    value={stats.jumlah_mahasiswa} 
                     iconColor='bg-secondary'
                     gradientStart='from-primary'
                     gradientEnd='to-secondary'
@@ -21,7 +59,7 @@ export default function DashboardAsistenPage() {
 
                 <StatCard
                     title="Rata-rata Progres"
-                    value="52%"
+                    value={stats.rata_rata} 
                     iconColor='bg-secondary'
                     gradientStart='from-primary'
                     gradientEnd='to-secondary'
