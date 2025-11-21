@@ -85,7 +85,7 @@ export default function DashboardMahasiswaPage() {
             name: member.username || 'Anonim',
             position: member.jabatan || 'Anggota',
             rating: 4, 
-            isSelf: user && user.nim === member.nim, 
+            isSelf: user && member && user.id === member.id,
         })),
     };
 
