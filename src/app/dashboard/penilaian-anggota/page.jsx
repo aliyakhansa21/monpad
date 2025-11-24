@@ -119,7 +119,7 @@ export default function PenilaianAnggotaPage() {
                 <button
                 type="button"
                 onClick={() => setValue(Math.max(0, value - 1))}
-                className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-background-dark"
+                className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-primary"
                 disabled={isSubmitting}
                 >
                 -
@@ -127,8 +127,8 @@ export default function PenilaianAnggotaPage() {
                 <span className="w-8 text-center font-medium">{value}</span>
                 <button
                 type="button"
-                onClick={() => setValue(Math.min(10, value + 1))}
-                className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-background-dark"
+                onClick={() => setValue(Math.min(100, value + 1))}
+                className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-primary"
                 disabled={isSubmitting}
                 >
                 +
