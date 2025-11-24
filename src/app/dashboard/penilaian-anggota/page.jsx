@@ -20,11 +20,6 @@ export default function PenilaianAnggotaPage() {
     const [kekreatifan, setKekreatifan] = useState(0);
     const [kerajinan, setKerajinan] = useState(0);
     const [ketaatan, setKetaatan] = useState(0);
-    // const [kualitas, setKualitas] = useState(0);
-    // const [kerjasama, setKerjasama] = useState(0);
-    // const [kreativitas, setKreativitas] = useState(0);
-    // const [skillTeknis, setSkillTeknis] = useState(0);
-    // const [penyelesaianTugas, setPenyelesaianTugas] = useState(0);
     const [catatan, setCatatan] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingTeam, setLoadingTeam] = useState(true);
@@ -106,11 +101,6 @@ export default function PenilaianAnggotaPage() {
             setKekreatifan(0);
             setKerajinan(0);
             setKetaatan(0);
-            // setKualitas(0); 
-            // setKerjasama(0); 
-            // setKreativitas(0);
-            // setSkillTeknis(0); 
-            // setPenyelesaianTugas(0);
             setCatatan('');
 
         } catch (error) {
@@ -132,7 +122,7 @@ export default function PenilaianAnggotaPage() {
                 className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-background-dark"
                 disabled={isSubmitting}
                 >
-                −
+                -
                 </button>
                 <span className="w-8 text-center font-medium">{value}</span>
                 <button
@@ -172,13 +162,13 @@ export default function PenilaianAnggotaPage() {
     return (
         <>
             <DashboardHeader title={`Penilaian Anggota Tim`}/>
-            <main className='p-0 md:p-4'>
+            <main className='p-6'> 
                 {/* Form Card */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-[#4D4F54] mb-6">Penilaian Anggota Tim</h3>
+                <div className="bg-white rounded-lg shadow-xl p-2 md:py-8 px-4 md:px-6 max-w-4xl mx-auto">
+                    <h3 className="text-lg font-semibold text-[#4D4F54] mb-6 border-b pb-3">Penilaian Anggota Tim</h3>
 
                     <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                             {/* Pilih Anggota Tim */}
                             <div>
                                 <label className="block text-sm font-medium text-[#4D4F54] mb-2">
@@ -187,7 +177,7 @@ export default function PenilaianAnggotaPage() {
                                 <select
                                     value={selectedMemberId}
                                     onChange={(e) => setSelectedMemberId(e.target.value)}
-                                    className="w-full px-4 py-2 border border-primary rounded-sm focus:outline-none focus:ring-2 focus:ring-background-dark"
+                                    className="w-full px-4 py-2 border border-primary rounded-sm focus:outline-none focus:ring-2 focus:ring-background-dark text-sm"
                                     required
                                     disabled={isSubmitting}
                                 >
@@ -200,6 +190,7 @@ export default function PenilaianAnggotaPage() {
                                 </select>
                             </div>
 
+                            {/* Role Anggota Tim */}
                             <div>
                                 <label className="block text-sm font-medium text-[#4D4F54] mb-2">
                                     Role Anggota Tim
@@ -207,7 +198,7 @@ export default function PenilaianAnggotaPage() {
                                 <select
                                     value={selectedRole}
                                     onChange={(e) => setSelectedRole(e.target.value)}
-                                    className="w-full px-4 py-2 border border-primary rounded-sm focus:outline-none focus:ring-2 focus:ring-background-dark"
+                                    className="w-full px-4 py-2 border border-primary rounded-sm focus:outline-none focus:ring-2 focus:ring-background-dark text-sm"
                                     required
                                     disabled={isSubmitting}
                                 >
@@ -221,24 +212,20 @@ export default function PenilaianAnggotaPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Left Column */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                            {/* Left Column - Kriteria */}
                             <div>
+                                <h4 className="font-semibold mb-3 text-gray-700">Kriteria Penilaian (0-10)</h4>
                                 {renderCounter (kekreatifan, setKekreatifan, 'Kekreatifan')}
                                 {renderCounter (kerajinan, setKerajinan, 'Kerajinan')}
                                 {renderCounter (ketaatan, setKetaatan, 'Ketaatan')}
-                            {/* {renderCounter(kualitas, setKualitas, 'Kualitas')}
-                            {renderCounter(kerjasama, setKerjasama, 'Kerjasama')}
-                            {renderCounter(kreativitas, setKreativitas, 'Kreativitas')} */}
                             </div>
 
-                            {/* Right Column */}
-                            <div>
-                                {/* {renderCounter(skillTeknis, setSkillTeknis, 'Skill Teknis Rolenya')}
-                                {renderCounter(penyelesaianTugas, setPenyelesaianTugas, 'Penyelesaian Tugas')} */}
-                                
+                            {/* Right Column - Summary */}
+                            <div className="pt-0 md:pt-8"> 
                                 {/* Summary Box */}
-                                <div className="mt-6 p-4 bg-white rounded border border-gray-300 shadow-sm">
+                                <div className="p-4 bg-gray-50 rounded border border-gray-300 shadow-sm">
+                                    <h4 className="font-semibold mb-3 text-gray-700">Skala Penilaian</h4>
                                     <div className="space-y-1 text-xs text-gray-700">
                                         <div>Sangat buruk 0 - 20</div>
                                         <div>Buruk 21 - 50</div>
@@ -258,7 +245,7 @@ export default function PenilaianAnggotaPage() {
                                 onChange={(e) => setCatatan(e.target.value)}
                                 placeholder="tambahkan catatan"
                                 rows="4"
-                                className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-background-dark resize-none"
+                                className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-background-dark resize-none text-sm"
                                 required 
                                 disabled={isSubmitting}
                             />
