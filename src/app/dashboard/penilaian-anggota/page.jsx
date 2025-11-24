@@ -1,55 +1,125 @@
 'use client';
 
 import DashboardHeader from '@/components/organism/DashboardHeader';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
+
+const GRADE_MAPPING = {
+    kekreatifan: 1,      
+    kerajinan: 2,     
+    ketaatan: 3,
+}
 
 export default function PenilaianAnggotaPage() {
-    const [selectedAnggota, setSelectedAnggota] = useState('');
+    const { user } = useAuth();
+    const [teamData, setTeamData] = useState(null);
+    const [selectedMemberId, setSelectedMemberId] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
-    const [kualitas, setKualitas] = useState(0);
-    const [kerjasama, setKerjasama] = useState(0);
-    const [kreativitas, setKreativitas] = useState(0);
-    const [skillTeknis, setSkillTeknis] = useState(0);
-    const [penyelesaianTugas, setPenyelesaianTugas] = useState(0);
+
+    const [kekreatifan, setKekreatifan] = useState(0);
+    const [kerajinan, setKerajinan] = useState(0);
+    const [ketaatan, setKetaatan] = useState(0);
+    // const [kualitas, setKualitas] = useState(0);
+    // const [kerjasama, setKerjasama] = useState(0);
+    // const [kreativitas, setKreativitas] = useState(0);
+    // const [skillTeknis, setSkillTeknis] = useState(0);
+    // const [penyelesaianTugas, setPenyelesaianTugas] = useState(0);
     const [catatan, setCatatan] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loadingTeam, setLoadingTeam] = useState(true);
 
-    // Data dummy - ganti dengan data dari API
-    const anggotaList = [
-        'Anggota 1',
-        'Anggota 2',
-        'Anggota 3',
-    ];
+    useEffect (() => {
+        const fetchTeamData = async () => {
+            try{
+                const response = await api.get('/dashboard/mahasiswa');
+                const apiData = response.data.data;
 
-    const roleList = [
-        'Frontend Developer',
-        'Backend Developer',
-        'UI/UX Designer',
-        'Project Manager',
-    ];
+                if (apiData.groups && apiData.groups.length > 0) {
+                    const currentGroup = apiData.groups[0];
+                    const membersToRate = currentGroup.anggota.filter(
+                        member => user && member.id !== user.id
+                    );
 
-    const handleSubmit = (e) => {
+                    setTeamData({
+                        id: currentGroup.id,
+                        anggota: membersToRate,
+                        roles: [... new Set(currentGroup.anggota.map(m => m.jabatan))].filter(r => r)
+                    });
+                }
+            } catch (err) {
+                console.error("Gagal memuat data tim:", err);
+                alert("Gagal memuat data tim. Pastikan Anda sudah tergabung dalam kelompok.");
+            } finally {
+                setLoadingTeam(false);
+            }
+        };
+
+        if (user) {
+            fetchTeamData();
+        } else {
+            setLoadingTeam(false);
+        }
+    }, [user]);
+
+    const anggotaList = teamData?.anggota || [];
+    const roleList = teamData?.roles || [];
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        const nilaiTotal = kualitas + kerjasama + kreativitas + skillTeknis + penyelesaianTugas;
-        const nilaiRataRata = (nilaiTotal / 5).toFixed(2);
 
-        console.log({
-        anggota: selectedAnggota,
-        role: selectedRole,
-        penilaian: {
-            kualitas,
-            kerjasama,
-            kreativitas,
-            skillTeknis,
-            penyelesaianTugas,
-        },
-        catatan,
-        nilaiTotal,
-        nilaiRataRata,
-        });
+        if (!teamData || !teamData.id) {
+            alert("Data kelompok belum dimuat. Tidak dapat menyimpan penilaian.");
+            return;
+        }
 
-        // Handle submit logic here
-        alert('Penilaian berhasil disimpan!');
+        if (!selectedMemberId) {
+            alert("Mohon pilih anggota tim yang akan dinilai.");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        const gradesData = [
+            { personal_grade_type_id: GRADE_MAPPING.kekreatifan, grade: kekreatifan },
+            { personal_grade_type_id: GRADE_MAPPING.kerajinan, grade: kerajinan },
+            { personal_grade_type_id: GRADE_MAPPING.ketaatan, grade: ketaatan },
+        ].filter(g => g.grade >= 0);
+
+        const requestBody = {
+            notes: catatan,
+            grades: gradesData,
+        };
+
+        const groupId = teamData.id;
+        const memberId = selectedMemberId;
+        const endpoint = `/group/${groupId}/members/${memberId}/qualification`;
+
+        try {
+            const response = await api.post(endpoint, requestBody);
+
+            console.log("Penilaian Sukses: ", response.data);
+            alert("Penilaian berhasil disimpan!");
+
+            // reset form
+            setSelectedMemberId('');
+            setKekreatifan(0);
+            setKerajinan(0);
+            setKetaatan(0);
+            // setKualitas(0); 
+            // setKerjasama(0); 
+            // setKreativitas(0);
+            // setSkillTeknis(0); 
+            // setPenyelesaianTugas(0);
+            setCatatan('');
+
+        } catch (error) {
+            console.error("Gagal menyimpan penilaian:", error.response || error);
+            const errorMessage = error.response?.data?.message || "Terjadi kesalahan saat menyimpan penilaian.";
+            alert(`Gagal menyimpan penilaian: ${errorMessage}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const renderCounter = (value, setValue, label) => (
@@ -60,6 +130,7 @@ export default function PenilaianAnggotaPage() {
                 type="button"
                 onClick={() => setValue(Math.max(0, value - 1))}
                 className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-background-dark"
+                disabled={isSubmitting}
                 >
                 −
                 </button>
@@ -68,6 +139,7 @@ export default function PenilaianAnggotaPage() {
                 type="button"
                 onClick={() => setValue(Math.min(10, value + 1))}
                 className="w-8 h-8 flex items-center justify-center border border-primary rounded hover:bg-background-dark"
+                disabled={isSubmitting}
                 >
                 +
                 </button>
@@ -75,8 +147,8 @@ export default function PenilaianAnggotaPage() {
         </div>
     );
 
-    const calculateTotal = () => {
-        const total = kualitas + kerjasama + kreativitas + skillTeknis + penyelesaianTugas;
+    const calculateTotal = useMemo(() => {
+        const total = kekreatifan + kerajinan + ketaatan;
         return {
         nilaiA: total,
         nilaiB: (total / 5).toFixed(2),
@@ -84,9 +156,18 @@ export default function PenilaianAnggotaPage() {
         nilaiD: (total / 5).toFixed(2),
         nilaiE: ((total / 50) * 100).toFixed(0),
         };
-    };
+    }, [kekreatifan, kerajinan, ketaatan]);
 
-    const totals = calculateTotal();
+    const totals = calculateTotal;
+
+    if (loadingTeam) {
+        return <div className="p-4 text-center">Memuat data kelompok...</div>;
+    }
+
+    if (!teamData || anggotaList.length === 0) {
+        return <div className="p-4 text-center text-red-600">Anda tidak tergabung dalam kelompok atau tidak ada anggota tim untuk dinilai.</div>;
+    }
+
 
     return (
         <>
@@ -104,21 +185,21 @@ export default function PenilaianAnggotaPage() {
                                     Pilih Anggota Tim
                                 </label>
                                 <select
-                                    value={selectedAnggota}
-                                    onChange={(e) => setSelectedAnggota(e.target.value)}
+                                    value={selectedMemberId}
+                                    onChange={(e) => setSelectedMemberId(e.target.value)}
                                     className="w-full px-4 py-2 border border-primary rounded-sm focus:outline-none focus:ring-2 focus:ring-background-dark"
                                     required
+                                    disabled={isSubmitting}
                                 >
                                     <option value="">Pilih Anggota Tim</option>
-                                    {anggotaList.map((anggota, index) => (
-                                    <option key={index} value={anggota}>
-                                        {anggota}
+                                    {anggotaList.map((member) => (
+                                    <option key={member.id} value={member.id}>
+                                        {member.username} ({member.jabatan})
                                     </option>
                                     ))}
                                 </select>
                             </div>
 
-                            {/* Role Anggota Tim */}
                             <div>
                                 <label className="block text-sm font-medium text-[#4D4F54] mb-2">
                                     Role Anggota Tim
@@ -128,6 +209,7 @@ export default function PenilaianAnggotaPage() {
                                     onChange={(e) => setSelectedRole(e.target.value)}
                                     className="w-full px-4 py-2 border border-primary rounded-sm focus:outline-none focus:ring-2 focus:ring-background-dark"
                                     required
+                                    disabled={isSubmitting}
                                 >
                                     <option value="">Pilih Role</option>
                                     {roleList.map((role, index) => (
@@ -140,31 +222,33 @@ export default function PenilaianAnggotaPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Left Column - Kriteria */}
+                            {/* Left Column */}
                             <div>
-                            {renderCounter(kualitas, setKualitas, 'Kualitas')}
+                                {renderCounter (kekreatifan, setKekreatifan, 'Kekreatifan')}
+                                {renderCounter (kerajinan, setKerajinan, 'Kerajinan')}
+                                {renderCounter (ketaatan, setKetaatan, 'Ketaatan')}
+                            {/* {renderCounter(kualitas, setKualitas, 'Kualitas')}
                             {renderCounter(kerjasama, setKerjasama, 'Kerjasama')}
-                            {renderCounter(kreativitas, setKreativitas, 'Kreativitas')}
+                            {renderCounter(kreativitas, setKreativitas, 'Kreativitas')} */}
                             </div>
 
-                            {/* Right Column - Skill & Summary */}
+                            {/* Right Column */}
                             <div>
-                            {renderCounter(skillTeknis, setSkillTeknis, 'Skill Teknis Rolenya')}
-                            {renderCounter(penyelesaianTugas, setPenyelesaianTugas, 'Penyelesaian Tugas')}
-                            
-                            {/* Summary Box */}
-                            <div className="mt-6 p-4 bg-white rounded border border-gray-300 shadow-sm">
-                                <div className="space-y-1 text-xs text-gray-700">
-                                <div>Sangat buruk 0 - 20</div>
-                                <div>Buruk 21 - 50</div>
-                                <div>Sedang 51 - 75</div>
-                                <div>Baik 76 - 90</div>
-                                <div>Sangat Baik 91 - 100</div>
+                                {/* {renderCounter(skillTeknis, setSkillTeknis, 'Skill Teknis Rolenya')}
+                                {renderCounter(penyelesaianTugas, setPenyelesaianTugas, 'Penyelesaian Tugas')} */}
+                                
+                                {/* Summary Box */}
+                                <div className="mt-6 p-4 bg-white rounded border border-gray-300 shadow-sm">
+                                    <div className="space-y-1 text-xs text-gray-700">
+                                        <div>Sangat buruk 0 - 20</div>
+                                        <div>Buruk 21 - 50</div>
+                                        <div>Sedang 51 - 75</div>
+                                        <div>Baik 76 - 90</div>
+                                        <div>Sangat Baik 91 - 100</div>
+                                    </div>
                                 </div>
                             </div>
-                            </div>
                         </div>
-
 
                         {/* Catatan */}
                         <div className="mt-6">
@@ -175,15 +259,18 @@ export default function PenilaianAnggotaPage() {
                                 placeholder="tambahkan catatan"
                                 rows="4"
                                 className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-background-dark resize-none"
+                                required 
+                                disabled={isSubmitting}
                             />
                         </div>
 
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full mt-6 py-3 bg-primary text-white rounded font-medium hover:bg-background-dark transition-colors"
+                            className="w-full mt-6 py-3 bg-primary text-white rounded font-medium hover:bg-background-dark transition-colors disabled:opacity-50"
+                            disabled={isSubmitting}
                         >
-                            Simpan Penilaian
+                            {isSubmitting ? 'Menyimpan...' : 'Simpan Penilaian'}
                         </button>
                     </form>
                 </div>
