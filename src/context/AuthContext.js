@@ -8,52 +8,64 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const router = useRouter();
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(null);
-    const [role, setRole] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); 
 
+    const [auth, setAuth] = useState({
+        user: null,
+        token: null,
+        role: null,
+    });
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    // restore session dari localStorage
     useEffect(() => {
-        const savedToken = localStorage.getItem("token");
         const savedUser = localStorage.getItem("user");
+        const savedToken = localStorage.getItem("token");
         const savedRole = localStorage.getItem("role");
 
-        if (savedToken && savedUser && savedRole) {
-            setToken(savedToken);
-            setUser(JSON.parse(savedUser));
-            setRole(savedRole);
+        if (savedUser && savedToken && savedRole) {
+            setAuth({
+                user: JSON.parse(savedUser),
+                token: savedToken,
+                role: savedRole,
+            });
         }
 
-        setIsLoading(false); 
-    }, []);  
+        setIsLoading(false);
+    }, []);
 
+    // auto logout jika 401
     useEffect(() => {
         const interceptor = api.interceptors.response.use(
-            res => res,
-            err => {
+            (res) => res,
+            (err) => {
                 if (err.response?.status === 401) {
                     logout(true);
                 }
                 return Promise.reject(err);
             }
         );
+
         return () => api.interceptors.response.eject(interceptor);
     }, []);
 
-
+    // login
     const login = async (credentials) => {
         try {
             const res = await apiAuth.post("/login", credentials);
-            const { token, user, role } = res.data.data;
 
-            setUser(user);
-            setToken(token);
-            setRole(role);
+            const { user, token, role } = res.data.data;
 
+            // simpan state global
+            const newAuth = { user, token, role };
+            setAuth(newAuth);
+
+            // simpan ke localStorage
             localStorage.setItem("user", JSON.stringify(user));
             localStorage.setItem("token", token);
             localStorage.setItem("role", role);
 
+            // redirect berdasar role
             const redirect = {
                 dosen: "/dashboard/dosen",
                 mahasiswa: "/dashboard/mahasiswa",
@@ -61,32 +73,34 @@ export function AuthProvider({ children }) {
             }[role] || "/dashboard";
 
             router.push(redirect);
-        } 
-        catch (err) {
+        } catch (err) {
             const msg = err.response?.data?.message || "Login gagal";
             throw new Error(msg);
         }
     };
 
+    // logout
     const logout = (redirect = true) => {
-        setUser(null);
-        setToken(null);
-        setRole(null);
-
+        setAuth({ user: null, token: null, role: null });
         localStorage.clear();
 
         if (redirect) router.push("/login");
     };
 
-    const value = useMemo(() => ({
-        user,
-        token,
-        role,
-        isLoggedIn: !!token,
-        login,
-        logout,
-    }), [user, token, role]);
+    // value yang dipake dihalaman lain
+    const value = useMemo(
+        () => ({
+            user: auth.user,
+            token: auth.token,
+            role: auth.role,
+            isLoggedIn: !!auth.token,
+            login,
+            logout,
+        }),
+        [auth]
+    );
 
+    // loader
     if (isLoading) {
         return (
             <div className="flex flex-col justify-center items-center min-h-screen">
@@ -96,11 +110,7 @@ export function AuthProvider({ children }) {
         );
     }
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

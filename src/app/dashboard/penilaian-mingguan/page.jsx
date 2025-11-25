@@ -1,202 +1,254 @@
-"use client"
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { AppSidebar } from "@/components/organism/app-sidebar";
-import PenilaianMingguanTable from '@/components/organism/PenilaianMingguanTable'; 
-import DashboardHeader from '@/components/organism/DashboardHeader';
-import Footer from "@/components/organism/Footer";
-import MingguSelect from '@/components/molecules/MingguSelect'; 
-import InputNilaiModal from '@/components/organism/InputNilaiModal';
-import api from '@/lib/api'; 
+"use client";
+import React, { useState, useMemo, useEffect } from "react";
+import PenilaianMingguanTable from "@/components/organism/PenilaianMingguanTable";
+import DashboardHeader from "@/components/organism/DashboardHeader";
+import MingguSelect from "@/components/molecules/MingguSelect";
+import InputNilaiModal from "@/components/organism/InputNilaiModal";
+import ReviewModal from "@/components/organism/ReviewModal";
+import api from "@/lib/api";
+import { useAuth } from "@/context/AuthContext"; 
 
-const CURRENT_USER_ROLE = 'asisten'; 
-
-const extractUniqueProjects = (allWeeks) => {
-    const uniqueProjectsMap = new Map();
-    
-    allWeeks.forEach(week => {
-        const project = week.project; // Asumsi relasi project ada di objek week
-        
-        if (project && project.id && !uniqueProjectsMap.has(project.id)) {
-            
-            // Format data yang dibutuhkan modal
-            uniqueProjectsMap.set(project.id, {
-                id: project.id.toString(),
-                name: project.name || project.nama_proyek || `Proyek #${project.id}`,
-                // Asumsi group_name ada di sini atau harus diambil dari relasi groups jika ada
-                group_name: project.group_name || 'Tidak ada kelompok', 
+const extractUniqueProjects = (allGroups) => {
+    const projects = [];
+    allGroups.forEach((group) => {
+        if (group.project_id) {
+            projects.push({
+                id: group.project_id.toString(),
+                name: group.nama || `Kelompok #${group.id}`,
+                group_name: group.nama || "Tidak ada kelompok",
             });
         }
     });
-
-    return Array.from(uniqueProjectsMap.values());
+    return projects;
 };
 
 export default function PenilaianMingguanPage() {
-    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+    const { role } = useAuth();      
+    const userRole = role;           
+
     const [penilaianData, setPenilaianData] = useState([]);
-    const [gradeTypes, setGradeTypes] = useState([]); 
-    const [searchTerm, setSearchTerm] = useState('');    
-    const [mingguOptions, setMingguOptions] = useState([]); 
-    const [weekTypeList, setWeekTypeList] = useState([]); 
+    const [gradeTypes, setGradeTypes] = useState([]);
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const [mingguOptions, setMingguOptions] = useState([]);
+    const [weekTypeList, setWeekTypeList] = useState([]);
+    const [selectedMinggu, setSelectedMinggu] = useState("");
+
     const [isLoadingMinggu, setIsLoadingMinggu] = useState(true);
-    const [selectedMinggu, setSelectedMinggu] = useState('');     
-    const [isLoadingAssessment, setIsLoadingAssessment] = useState(false);     
-    const [isModalOpen, setIsModalOpen] = useState(false); 
-    const [allProjectsData, setAllProjectsData] = useState([]); 
-    const toggleSidebar = () => { setIsSidebarExpanded(prev => !prev); };
+    const [isLoadingAssessment, setIsLoadingAssessment] = useState(false);
 
+    const [isInputNilaiModalOpen, setIsInputNilaiModalOpen] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [allProjectsData, setAllProjectsData] = useState([]);
+
+    //fetch data
     const fetchAllWeeksAndExtractTypes = async () => {
         setIsLoadingMinggu(true);
         setIsLoadingAssessment(true);
-        
+
         try {
-            const response = await api.get("/week"); 
-            const allWeeks = response.data.data || [];
-            setPenilaianData(allWeeks);
+            const [weeksRes, groupsRes, projectsRes] = await Promise.all([
+                api.get("/week"),
+                api.get("/group"),
+                api.get("/project"),
+            ]);
 
-            // 1. Ekstrak Proyek dan Kelompok Unik (untuk Modal)
-            const projects = extractUniqueProjects(allWeeks);
-            setAllProjectsData(projects);
-            
-            // 2. Ekstrak WeekType yang unik (untuk Dropdown Minggu)
-            const uniqueWeekTypesMap = new Map();
-            allWeeks.forEach(week => {
-                const weekType = week.week_type;
-                if (weekType && !uniqueWeekTypesMap.has(weekType.id)) {
-                    uniqueWeekTypesMap.set(weekType.id, weekType);
-                }
-            });
+            const allWeeksData = weeksRes.data.data || [];
+            const allGroupsData = groupsRes.data.data || [];
+            const allProjectsDataRes = projectsRes.data.data || [];
 
-            const uniqueWeekTypes = Array.from(uniqueWeekTypesMap.values());
-            setWeekTypeList(uniqueWeekTypes);
+            const projectInfoMap = new Map();
 
-            const options = uniqueWeekTypes.map(wt => ({ 
-                value: wt.id.toString(), 
-                label: wt.name || `Minggu ${wt.id}` 
-            }));
-            setMingguOptions(options);
-
-
-            // 3. Ekstrak Grade Type unik (untuk Header Kolom)
-            const uniqueGradeTypesMap = new Map();
-            allWeeks.forEach(week => {
-                week.grades?.forEach(grade => {
-                    const gradeType = grade.grade_type;
-                    if (gradeType && !uniqueGradeTypesMap.has(gradeType.id)) {
-                        uniqueGradeTypesMap.set(gradeType.id, gradeType);
-                    }
+            allProjectsDataRes.forEach((project) => {
+                projectInfoMap.set(project.id, {
+                    project_name: project.nama_projek,
+                    group_name: null,
                 });
             });
 
-            const allUniqueGradeTypes = Array.from(uniqueGradeTypesMap.values());
-            allUniqueGradeTypes.sort((a, b) => a.id - b.id); 
-            setGradeTypes(allUniqueGradeTypes);
+            allGroupsData.forEach((group) => {
+                if (group.project_id && projectInfoMap.has(group.project_id)) {
+                    const ex = projectInfoMap.get(group.project_id);
+                    projectInfoMap.set(group.project_id, {
+                        ...ex,
+                        group_name: group.nama,
+                    });
+                }
+            });
 
-            // 4. Set default selected minggu
-            if (options.length > 0) {
-                const defaultSelectedId = options[0].value;
-                setSelectedMinggu(defaultSelectedId);                    
-            } else {
-                setSelectedMinggu(''); 
-                setGradeTypes([]); 
+            const projectsForModal = extractUniqueProjects(allGroupsData);
+            setAllProjectsData(projectsForModal);
+
+            const combined = allWeeksData.map((week) => {
+                const info = projectInfoMap.get(week.project_id);
+                return {
+                    ...week,
+                    project: info
+                        ? {
+                            id: week.project_id,
+                            group_name: info.group_name,
+                            nama_projek: info.project_name,
+                        }
+                        : {
+                            id: week.project_id,
+                            group_name: "-",
+                            nama_projek: "Proyek Tidak Ditemukan",
+                        },
+                };
+            });
+
+            setPenilaianData(combined);
+
+            const uniqueWeekTypes = Array.from(
+                new Map(
+                    combined
+                        .filter((w) => w.week_type)
+                        .map((w) => [w.week_type.id, w.week_type])
+                ).values()
+            );
+
+            setWeekTypeList(uniqueWeekTypes);
+
+            const options = uniqueWeekTypes.map((wt) => ({
+                value: wt.id.toString(),
+                label: wt.name,
+            }));
+
+            setMingguOptions(options);
+            if (options.length > 0 && !selectedMinggu) {
+                setSelectedMinggu(options[0].value);
             }
-            
-        } catch (error) {
-            console.error("Gagal mengambil data Weeks:", error.response?.status, error.message);
-            setPenilaianData([]);
-            setMingguOptions([]);
-            setWeekTypeList([]);
-            setGradeTypes([]);
-            setAllProjectsData([]); 
+
+            const uniqueGradeTypes = Array.from(
+                new Map(
+                    combined
+                        .flatMap((w) => w.grades || [])
+                        .map((g) => [g.grade_type.id, g.grade_type])
+                ).values()
+            );
+
+            setGradeTypes(uniqueGradeTypes);
+        } catch (e) {
+            console.error(e);
         } finally {
             setIsLoadingMinggu(false);
             setIsLoadingAssessment(false);
         }
     };
-    
+
     useEffect(() => {
         fetchAllWeeksAndExtractTypes();
     }, []);
 
     const handleSaveSuccess = () => {
-        setIsModalOpen(false);
-        fetchAllWeeksAndExtractTypes(); 
+        setIsInputNilaiModalOpen(false);
+        setIsReviewModalOpen(false);
+        fetchAllWeeksAndExtractTypes();
     };
 
-    const handleReview = () => {
-        if (CURRENT_USER_ROLE === 'asisten') {
-            setIsModalOpen(true);
-        } else {
-            console.warn('Akses Ditolak. Hanya Asisten yang dapat menambah nilai.');
+    // action
+    const handleReview = (item = null) => {
+        setSelectedItem(item);
+
+        if (userRole === "asisten") {
+            setIsInputNilaiModalOpen(true);
+        }
+
+        if (userRole === "dosen" && item) {
+            setIsReviewModalOpen(true);
         }
     };
-    
-    const handleSearch = (term) => { 
-        setSearchTerm(term); 
-    };
-    
-    const handlePageChange = (page) => { 
-        console.log('Pindah ke halaman:', page); 
-    };
 
-    // Filter Data
+    // filter
     const filteredData = useMemo(() => {
-        const dataByWeek = penilaianData.filter(item => {                
-            const idToMatch = item.week_type?.id || item.week_type_id;                 
-            return idToMatch && idToMatch.toString() === selectedMinggu.toString();
+        const dataByWeek = penilaianData.filter((i) => {
+            return (
+                i.week_type?.id &&
+                i.week_type.id.toString() === selectedMinggu.toString()
+            );
         });
 
         if (!searchTerm) return dataByWeek;
-        
-        const lowerSearch = searchTerm.toLowerCase();
-        return dataByWeek.filter(item => {
-            const projectName = item.project?.name?.toLowerCase() || '';
-            const groupName = item.project?.group_name?.toLowerCase() || '';
-            const notes = item.notes?.toLowerCase() || '';
-            
-            return projectName.includes(lowerSearch) || 
-                groupName.includes(lowerSearch) || 
-                notes.includes(lowerSearch);
-        });
-    }, [penilaianData, searchTerm, selectedMinggu]); 
 
-    const currentWeekType = weekTypeList.find(wt => wt.id.toString() === selectedMinggu);
+        const q = searchTerm.toLowerCase();
+
+        return dataByWeek.filter((i) => {
+            return (
+                i.project?.nama_projek?.toLowerCase().includes(q) ||
+                i.project?.group_name?.toLowerCase().includes(q) ||
+                i.notes?.toLowerCase().includes(q)
+            );
+        });
+    }, [penilaianData, searchTerm, selectedMinggu]);
+
+    const currentWeekType = weekTypeList.find(
+        (w) => w.id.toString() === selectedMinggu
+    );
 
     return (
         <>
-            {CURRENT_USER_ROLE === 'asisten' && (
+            {/* Modal Asisten */}
+            {userRole === "asisten" && (
                 <InputNilaiModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    isOpen={isInputNilaiModalOpen}
+                    onClose={() => setIsInputNilaiModalOpen(false)}
                     onSaveSuccess={handleSaveSuccess}
                     gradeTypes={gradeTypes}
-                    weekTypeId={currentWeekType ? parseInt(currentWeekType.id) : null} 
-                    projectsData={allProjectsData} 
-                    isLoadingProjects={isLoadingMinggu || isLoadingAssessment} 
+                    weekTypeId={
+                        currentWeekType ? parseInt(currentWeekType.id) : null
+                    }
+                    projectsData={allProjectsData}
+                    isLoadingProjects={
+                        isLoadingMinggu || isLoadingAssessment
+                    }
+                    itemToEdit={selectedItem}
                 />
             )}
 
-            <DashboardHeader title="Laporan Mingguan"/>                        
+            {/* Modal Dosen */}
+            {userRole === "dosen" && (
+                <ReviewModal
+                    isOpen={isReviewModalOpen}
+                    onClose={() => setIsReviewModalOpen(false)}
+                    onSaveSuccess={handleSaveSuccess}
+                    itemToReview={selectedItem}
+                    gradeTypes={gradeTypes}
+                />
+            )}
+
+            <DashboardHeader title="Laporan Mingguan" />
+
             <div className="p-4 flex items-center space-x-4">
-                <MingguSelect 
-                    options={mingguOptions} 
-                    selectedMinggu={selectedMinggu} 
+                <MingguSelect
+                    options={mingguOptions}
+                    selectedMinggu={selectedMinggu}
                     onMingguChange={setSelectedMinggu}
                     isLoading={isLoadingMinggu}
-                /> 
-            </div>                        
-            <main className='p-4'>
+                />
+
+                {userRole === "asisten" && (
+                    <button
+                        onClick={() => handleReview(null)}
+                        className="px-4 py-2 bg-primary text-white rounded-lg"
+                    >
+                        + Tambah Nilai
+                    </button>
+                )}
+            </div>
+
+            <main className="p-4">
                 <PenilaianMingguanTable
-                    data={filteredData} 
-                    gradeTypes={gradeTypes} 
-                    onSearch={handleSearch}                                
+                    data={filteredData}
+                    gradeTypes={gradeTypes}
+                    onSearch={setSearchTerm}
                     onReview={handleReview}
-                    userRole={CURRENT_USER_ROLE}
-                    isLoading={isLoadingAssessment || isLoadingMinggu} 
-                    totalPages={1} 
+                    userRole={userRole}
+                    isLoading={isLoadingAssessment || isLoadingMinggu}
+                    totalPages={1}
                     currentPage={1}
-                    onPageChange={handlePageChange}
+                    onPageChange={() => {}}
                     totalWeekWeight={100}
                 />
             </main>

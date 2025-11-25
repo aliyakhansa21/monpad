@@ -23,11 +23,11 @@ const PenilaianMingguanTable = ({
 }) => {
     
     const IS_ASSISTANT = userRole === 'asisten';
-    
-    // BUTUH DIPERBAIKI (TANYA JIBRIL)
+    const IS_LECTURER = userRole === 'dosen';
+
     const staticColumns = useMemo(() => [
         { key: 'kelompok', label: 'KELOMPOK', apiPath: 'project.group_name' }, 
-        { key: 'namaProyek', label: 'NAMA PROYEK', apiPath: 'project.name' },
+        { key: 'namaProyek', label: 'NAMA PROYEK', apiPath: 'project.nama_projek' },
     ], []);
 
     const dynamicHeaders = useMemo(() => {
@@ -67,7 +67,7 @@ const PenilaianMingguanTable = ({
     const renderTotalScoreCell = (item) => {
         const totalScore = calculateTotalScore(item);
         return (
-            <td className="px-3 py-4 md:px-6 md:py-4 text-center font-bold text-lg text-purple-700 whitespace-nowrap">
+            <td className="px-3 py-4 md:px-6 md:py-4 text-center text-sm text-black whitespace-nowrap">
                 {totalScore}
             </td>
         );
@@ -107,33 +107,28 @@ const PenilaianMingguanTable = ({
                 <p className="text-lg font-medium text-gray-600">
                     Tidak ada data penilaian untuk minggu ini
                 </p>
-                <p className="text-sm text-gray-500 mt-2">
-                    {IS_ASSISTANT && "Klik tombol + untuk menambah penilaian baru"}
-                </p>
+
+                {IS_ASSISTANT && (
+                    <p className="text-sm text-gray-500 mt-2">
+                        Klik tombol + untuk menambah penilaian baru
+                    </p>
+                )}
             </div>
         );
     }
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
+
+            {/* Top toolbar */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">                 
                 <div className="flex-1"></div>
+
                 <div className="flex items-center space-x-3">
                     <SearchInput 
                         placeholder="Cari Kelompok/Proyek" 
                         onChange={(e) => onSearch(e.target.value)} 
                     />
-                    
-                    {IS_ASSISTANT && (
-                        <Button 
-                            onClick={onReview} 
-                            variant="icon-only" 
-                            aria-label="Tambah Nilai Baru"
-                            className="bg-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition duration-150"
-                        >
-                            <Icon name="filled-plus" size={24} /> 
-                        </Button>
-                    )}
                 </div>
             </div>
 
@@ -141,12 +136,11 @@ const PenilaianMingguanTable = ({
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            {/* Kolom Statis (Kelompok & Nama Proyek) */}
                             {staticColumns.map(col => (
                                 <th 
                                     rowSpan={2} 
                                     key={col.key} 
-                                    className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-left text-xs font-medium text-white uppercase tracking-wider"
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
                                 >
                                     {col.label}
                                 </th>
@@ -154,68 +148,88 @@ const PenilaianMingguanTable = ({
                             
                             <th 
                                 colSpan={dynamicHeaders.length} 
-                                className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white uppercase tracking-wider"
+                                className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
                                 PENILAIAN
                             </th>
                             
                             <th 
                                 rowSpan={2} 
-                                className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white uppercase tracking-wider"
+                                className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
                                 TOTAL SKOR
                             </th>
                             
                             <th 
                                 rowSpan={2} 
-                                className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white uppercase tracking-wider"
+                                className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
                                 CATATAN
                             </th>
+
+                            {IS_LECTURER && (
+                                <th 
+                                    rowSpan={2}
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                >
+                                    REVIEW
+                                </th>
+                            )}
                         </tr>
                         
-                        {/* Header Dinamis (Aspek Penilaian) */}
                         <tr>                            
                             {dynamicHeaders.map(col => (
                                 <th 
                                     key={col.key} 
-                                    className="px-3 py-3 md:px-6 md:py-3 bg-purple-700 text-center text-xs font-medium text-white tracking-wider whitespace-nowrap"
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white tracking-wider whitespace-nowrap"
                                 >
                                     {col.label}
                                 </th>
-                            ))}                            
+                            ))}
                         </tr>
                     </thead>
+
                     <tbody className="bg-white divide-y divide-gray-200">
                         {displayData.map((item, index) => (
                             <tr 
                                 key={item.id} 
-                                className={index % 2 === 0 ? 'bg-white' : 'bg-purple-50/30 hover:bg-purple-50/50'}
+                                className={index % 2 === 0 ? 'bg-white' : 'bg-background-light hover:bg-purple-50/50'}
                             >
-                                {/* Kolom Statis */}
                                 {staticColumns.map(column => (
-                                    <React.Fragment key={column.key}>
-                                        <td className="px-3 py-4 md:px-6 md:py-4 text-left whitespace-nowrap text-sm">
-                                            {getNestedValue(item, column.apiPath) || '-'}
-                                        </td>
-                                    </React.Fragment>
+                                    <td 
+                                        key={column.key}
+                                        className="px-3 py-4 md:px-6 md:py-4 text-center whitespace-nowrap text-sm"
+                                    >
+                                        {getNestedValue(item, column.apiPath) || '-'}
+                                    </td>
                                 ))}
 
-                                {/* Kolom Dinamis (Aspek Penilaian) */}
                                 {dynamicHeaders.map(header => (
                                     <React.Fragment key={header.key}>
                                         {renderDynamicCell(item, header)}
                                     </React.Fragment>
-                                ))}                                
-                                {/* Total Skor */}
-                                {renderTotalScoreCell(item)}                                
-                                {/* Catatan */}
+                                ))}
+
+                                {renderTotalScoreCell(item)}
                                 {renderNotesCell(item)}
+
+                                {IS_LECTURER && (
+                                    <td className="px-3 py-4 text-center">
+                                        <Button
+                                            variant="icon-only-2"
+                                            onClick={() => onReview(item)}
+                                            className="text-primary hover:bg-purple-100 rounded-full"
+                                        >
+                                            <Icon name="filled-plus" size={30} />
+                                        </Button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
                 </table>
-            </div>            
+            </div>
+
             <div className="mt-4 flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
                 <span className="text-sm text-gray-700">
                     Menampilkan {displayData.length} dari {displayData.length} entri

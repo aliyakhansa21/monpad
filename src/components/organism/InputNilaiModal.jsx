@@ -6,8 +6,8 @@ import api from '@/lib/api';
 
 const GradeInput = ({ label, value, onChange, gradeTypeId }) => (
     <div className="flex flex-col space-y-2">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <div className="flex items-center space-x-1 border border-gray-300 rounded-lg px-2 py-1 bg-white">
+        <label className="text-sm font-medium text-primary font-semibold">{label}</label>
+        <div className="flex items-center space-x-1 border border-primary rounded-sm px-2 py-1 bg-white">
             <button 
                 onClick={() => onChange(gradeTypeId, Math.max(0, value - 1))} 
                 type="button"
@@ -49,19 +49,22 @@ const InputNilaiModal = ({
     weekTypeId, 
     onSaveSuccess,
     projectsData, 
-    isLoadingProjects 
+    isLoadingProjects,
+    itemToEdit 
 }) => {
     const [kelompokOptions, setKelompokOptions] = useState([]);
     const [projectOptions, setProjectOptions] = useState([]);
+    
+    const initialGrades = gradeTypes.map(type => ({
+        grade_type_id: type.id,
+        grade: 0,
+    }));
     
     const [formData, setFormData] = useState({
         kelompok: '',
         project_id: '',
         notes: '',
-        grades: gradeTypes.map(type => ({
-            grade_type_id: type.id,
-            grade: 0,
-        })),
+        grades: initialGrades,
     });
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -69,26 +72,16 @@ const InputNilaiModal = ({
     useEffect(() => {
         if (isOpen) {
             setError(null);            
-            setFormData({
-                kelompok: '',
-                project_id: '',
-                notes: '',
-                grades: gradeTypes.map(type => ({
-                    grade_type_id: type.id,
-                    grade: 0,
-                })),
-            });
             
             const projects = projectsData || [];
             
             if (projects.length === 0 && !isLoadingProjects) {
-                setError("Tidak ada proyek yang sudah dinilai tersedia.");
+                setError("Tidak ada proyek tersedia untuk dinilai.");
                 setKelompokOptions([]);
                 setProjectOptions([]);
                 return;
             }
             
-            // 1. Ekstraksi Kelompok Unik
             const uniqueKelompok = [...new Set(projects.map(p => p.group_name || 'Tidak ada kelompok'))];
             const kOptions = uniqueKelompok.map(k => ({ 
                 value: k, 
@@ -96,33 +89,52 @@ const InputNilaiModal = ({
             }));
             setKelompokOptions(kOptions);
             
-            // 2. Set Kelompok Default
-            const defaultKelompok = kOptions[0]?.value || '';
-            
-            // 3. Filter Proyek berdasarkan Kelompok Default
-            const filteredProjects = projects.filter(p => 
+            let defaultKelompok = kOptions[0]?.value || '';
+            let defaultProjectId = '';
+            let defaultNotes = '';
+            let defaultGrades = gradeTypes.map(type => ({ grade_type_id: type.id, grade: 0 }));
+
+            let filteredProjects = projects.filter(p => 
                 (p.group_name || 'Tidak ada kelompok') === defaultKelompok
             );
+            
+            if (itemToEdit) {
+                defaultKelompok = itemToEdit.project?.group_name || '';
+                defaultProjectId = itemToEdit.project_id?.toString() || '';
+                defaultNotes = itemToEdit.notes || '';
+                
+                defaultGrades = gradeTypes.map(type => {
+                    const existingGrade = itemToEdit.grades?.find(g => g.grade_type.id === type.id);
+                    return {
+                        grade_type_id: type.id,
+                        grade: existingGrade ? parseFloat(existingGrade.grade) : 0,
+                    };
+                });
+                
+                filteredProjects = projects.filter(p => 
+                    (p.group_name || 'Tidak ada kelompok') === defaultKelompok
+                );
+            }
+            
             const pOptions = filteredProjects.map(p => ({ 
                 value: p.id.toString(), 
-                label: p.name || p.nama_proyek || 'Proyek #' + p.id
+                label: p.name || p.nama_projek || 'Proyek #' + p.id 
             }));
             setProjectOptions(pOptions);
 
-            // 4. Set Form Data Awal (termasuk default Kelompok/Proyek)
-            setFormData(prev => ({
-                ...prev,
-                kelompok: defaultKelompok,
-                project_id: pOptions[0]?.value || '',
-                grades: gradeTypes.map(type => ({
-                    grade_type_id: type.id,
-                    grade: 0,
-                })),
-            }));
-        }
-    }, [isOpen, gradeTypes, projectsData, isLoadingProjects]); 
+            if (!itemToEdit && pOptions.length > 0) {
+                defaultProjectId = pOptions[0].value;
+            }
 
-    // Update proyek ketika kelompok berubah
+            setFormData({
+                kelompok: defaultKelompok,
+                project_id: defaultProjectId,
+                notes: defaultNotes,
+                grades: defaultGrades,
+            });
+        }
+    }, [isOpen, gradeTypes, projectsData, isLoadingProjects, itemToEdit]); 
+
     const handleKelompokChange = (kelompok) => {
         setFormData(prev => ({ ...prev, kelompok, project_id: '' }));
         
@@ -131,7 +143,7 @@ const InputNilaiModal = ({
         );
         const pOptions = filteredProjects.map(p => ({ 
             value: p.id.toString(), 
-            label: p.name || p.nama_proyek || 'Proyek #' + p.id
+            label: p.name || p.nama_projek || 'Proyek #' + p.id
         }));
         setProjectOptions(pOptions);
         
@@ -140,7 +152,6 @@ const InputNilaiModal = ({
         }
     };
 
-    // Update nilai grade
     const handleGradeChange = useCallback((gradeTypeId, newGrade) => {
         setFormData(prev => ({
             ...prev,
@@ -178,9 +189,14 @@ const InputNilaiModal = ({
         };
         
         try {
-            const response = await api.post("/week", payload);
+            if (itemToEdit) {
+                await api.put(`/week/${itemToEdit.id}`, payload);
+                alert('Penilaian berhasil diperbarui!');
+            } else {
+                await api.post("/week", payload);
+                alert('Penilaian berhasil disimpan!');
+            }
 
-            alert('Penilaian berhasil disimpan!');
             onSaveSuccess();
             onClose();
 
@@ -201,7 +217,7 @@ const InputNilaiModal = ({
                 
                 {/* Header Modal */}
                 <div className="px-8 py-5 border-b border-gray-200 text-center">
-                    <h2 className="text-2xl font-semibold text-gray-900">Penilaian Mingguan</h2>
+                    <h2 className="text-2xl font-semibold text-primary">Penilaian Mingguan</h2>
                 </div>
 
                 {/* Body Form */}
@@ -215,7 +231,7 @@ const InputNilaiModal = ({
                     <div className="grid grid-cols-2 gap-8">
                         {/* Kelompok */}
                         <div className="flex flex-col space-y-1">
-                            <label className="text-sm font-medium text-gray-700">
+                            <label className="text-sm font-semibold font-medium text-primary">
                                 Kelompok
                             </label>
                             {isLoadingProjects ? (
@@ -228,15 +244,15 @@ const InputNilaiModal = ({
                                     value={formData.kelompok}
                                     onChange={(e) => handleKelompokChange(e.target.value)}
                                     placeholder="Kelompok"
-                                    className="border-gray-300 bg-gray-50 h-11"
-                                    disabled={kelompokOptions.length === 0}
+                                    className="border border-primary bg-gray-50 h-11 rounded-sm"
+                                    disabled={kelompokOptions.length === 0 || itemToEdit} // Disable jika edit
                                 />
                             )}
                         </div>
 
                         {/* Nama Proyek */}
                         <div className="flex flex-col space-y-1">
-                            <label className="text-sm font-medium text-gray-700">
+                            <label className="text-sm font-semibold font-medium text-primary">
                                 Nama Proyek
                             </label>
                             {isLoadingProjects ? (
@@ -253,7 +269,8 @@ const InputNilaiModal = ({
                                     value={formData.project_id}
                                     onChange={(e) => setFormData(p => ({ ...p, project_id: e.target.value }))}
                                     placeholder="Nama Proyek"
-                                    className="border-gray-300 bg-gray-50 h-11"
+                                    className="border border-primary bg-gray-50 h-11 rounded-sm"
+                                    disabled={itemToEdit} 
                                 />
                             )}
                         </div>
@@ -272,11 +289,11 @@ const InputNilaiModal = ({
                     </div>
 
                     <div className="flex flex-col space-y-2 pt-4">
-                        <label className="text-sm font-medium text-gray-700">Catatan</label>
+                        <label className="text-sm font-medium text-primary font-semibold">Catatan</label>
                         <textarea
                             value={formData.notes}
                             onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
-                            className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 resize-none text-sm"
+                            className="w-full h-32 p-3 border border border-primary focus:ring-purple-500 focus:border-purple-500 resize-none text-sm"
                             placeholder="tambahkan catatan"
                         />
                     </div>
@@ -285,7 +302,7 @@ const InputNilaiModal = ({
                         <button 
                             onClick={onClose} 
                             type="button" 
-                            className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                            className="px-6 py-2 bg-white border border-primary text-gray-700 rounded-sm hover:bg-gray-50 transition font-medium"
                             disabled={isSaving}
                         >
                             Batal
@@ -293,7 +310,7 @@ const InputNilaiModal = ({
                         <button 
                             onClick={handleSubmit}
                             type="submit" 
-                            className="px-6 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition font-medium disabled:bg-purple-300 disabled:cursor-not-allowed"
+                            className="px-6 py-2 bg-primary text-white rounded-sm hover:bg-background-dark transition font-medium disabled:bg-purple-300 disabled:cursor-not-allowed"
                             disabled={isSaving || isLoadingProjects || !formData.project_id}
                         >
                             {isSaving ? 'Menyimpan...' : 'Simpan'}
@@ -317,6 +334,11 @@ InputNilaiModal.propTypes = {
     onSaveSuccess: PropTypes.func.isRequired,
     projectsData: PropTypes.array.isRequired,
     isLoadingProjects: PropTypes.bool.isRequired,
+    itemToEdit: PropTypes.object, 
+};
+
+InputNilaiModal.defaultProps = {
+    itemToEdit: null,
 };
 
 export default InputNilaiModal;
