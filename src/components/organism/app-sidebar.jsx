@@ -26,13 +26,13 @@ const menus = {
   mahasiswa: [
     {title: "Beranda", href: "/dashboard/mahasiswa"},
     {title: "Progres Proyek", href: "/dashboard/progres-proyek"},
-    {title: "Nilai Anggota Tim", href: "/dashboard/nilai-anggota"},
+    {title: "Nilai Anggota Tim", href: "/dashboard/penilaian-anggota"},
     {title: "Nilai Akhir", href: "/dashboard/nilai-akhir"},
   ]
 };
 
 
-export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleTitle }) { 
+export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleTitle, onLogout }) { 
   const pathname = usePathname();
   const sidebarWidthClass = isExpanded ? "w-sidebar-width" : "w-[72px]";
   const currentItems = menus[userRole] || [];
@@ -73,15 +73,15 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
           </Link>
         ))}
 
-        <Link
-          href="#" 
+        <button
+          onClick={onLogout}
           className={`block py-2 rounded-md transition-colors pl-[16px] pr-2 mt-4 text-gray-200 hover:bg-dark-purple/80 border-t border-indigo-700/50 pt-3`}
         >
           <div className="flex items-center space-x-2">
             <LogOut className="h-5 w-5" />
             <span>Log Out</span>
           </div>
-        </Link>
+        </button>
       </nav>
 
       {isExpanded && (
@@ -93,7 +93,7 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
               <p className="text-xs text-gray-400">{userRoleTitle}</p>
             </div>
           </div>
-            <button aria-label="Detail Profil" className="p-1 rounded-full hover:bg-white/10 transition-colors">
+            <button onClick={onLogout} aria-label="Detail Profil" className="p-1 rounded-full hover:bg-white/10 transition-colors">
               <LogOut className="h-5 w-5 text-gray-400 cursor-pointer hover:text-white" />
             </button>
         </div>
@@ -104,7 +104,7 @@ export function AppSidebar({ isExpanded, onToggle, userRole, userName, userRoleT
             <button aria-label="Beranda" className="p-1 rounded-full hover:bg-white/10 transition-colors">
               <Home className="h-6 w-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
             </button>
-            <button aria-label="Log Out" className="p-1 rounded-full hover:bg-white/10 transition-colors">
+            <button onClick={onLogout} aria-label="Log Out" className="p-1 rounded-full hover:bg-white/10 transition-colors">
               <LogOut className="h-6 w-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
             </button>
         </div>
