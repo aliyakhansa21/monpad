@@ -31,16 +31,6 @@ export default function DashboardLayout({ children }) {
         }
 
     }, [isLoading, isLoggedIn, router, user, role]);
-
-    const sidebarWidthOpen = '280px';
-    const sidebarWidthClosed = '72px';
-    
-    const mainContentMargin = isSidebarExpanded 
-        ? `md:ml-[${sidebarWidthOpen}] ml-0`  
-        : `md:ml-[${sidebarWidthClosed}] ml-0`; 
-    
-    const sidebarMobileTransform = isSidebarExpanded ? 'translate-x-0' : '-translate-x-full';
-    
     
     if (isLoading || !isLoggedIn) {
         return (
@@ -52,8 +42,9 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className='flex w-full min-h-screen'>
+            {/* Sidebar - Fixed position */}
             <div className={`fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-in-out 
-                            ${sidebarMobileTransform} md:translate-x-0`}> 
+                            ${isSidebarExpanded ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}> 
                 <AppSidebar
                     isExpanded={isSidebarExpanded}
                     onToggle={toggleSidebar}                    
@@ -64,22 +55,27 @@ export default function DashboardLayout({ children }) {
                 />
             </div>
 
-            {/* toggle sidebar mobile */}
+            {/* Toggle button untuk mobile */}
             {!isSidebarExpanded && (
                 <button
                     onClick={toggleSidebar}
-                    className="fixed top-4 left-4 p-2 z-50 md:hidden 
-                            bg-dark-purple text-white rounded-full shadow-lg"
+                    className="fixed top-2 left-2 p-1 z-50 md:hidden 
+                            bg-white border border-gray-300 text-dark-purple rounded-md shadow-sm"
                     aria-label="Buka Menu"
                 >
                     <Menu className="h-6 w-6" />
                 </button>
             )}
 
+            {/* Main Content Area */}
             <div className={`flex flex-col flex-1 w-full relative z-10
                             transition-all duration-300 ease-in-out 
-                            ${mainContentMargin} `}> 
+                            ${isSidebarExpanded 
+                                ? 'md:ml-[280px]' // Sidebar terbuka
+                                : 'md:ml-[72px]'   // Sidebar tertutup
+                            } ml-0`}>
                 
+                {/* Overlay untuk mobile saat sidebar terbuka */}
                 {isSidebarExpanded && (
                     <div 
                         className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
@@ -87,6 +83,7 @@ export default function DashboardLayout({ children }) {
                     />
                 )}
                 
+                {/* Content Area */}
                 <div className='flex-1 bg-gray-100'>
                     <main className="p-4 md:p-6 min-h-[calc(100vh-140px)] w-full"> 
                         {children} 
