@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import SearchInput from '@/components/molecules/SearchInput';
 import Button from '@/components/atoms/Button';
@@ -20,8 +20,7 @@ const PenilaianMingguanTable = ({
     currentPage, 
     onPageChange,
     totalWeekWeight,
-}) => {
-    
+}) => {    
     const IS_ASSISTANT = userRole === 'asisten';
     const IS_LECTURER = userRole === 'dosen';
 
@@ -81,7 +80,7 @@ const PenilaianMingguanTable = ({
             </td>
         );
     };
-    
+
     if (isLoading) {
         return (
             <div className="bg-white p-10 rounded-lg shadow text-center">
@@ -129,6 +128,16 @@ const PenilaianMingguanTable = ({
                         placeholder="Cari Kelompok/Proyek" 
                         onChange={(e) => onSearch(e.target.value)} 
                     />
+
+                    {userRole === "asisten" && (
+                        <button
+                            // Panggil prop onReview dari parent
+                            onClick={() => onReview(null)} 
+                            className="px-4 py-2 bg-primary text-white rounded-lg whitespace-nowrap"
+                        >
+                            + Tambah Nilai
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -172,7 +181,7 @@ const PenilaianMingguanTable = ({
                                     rowSpan={2}
                                     className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
                                 >
-                                    REVIEW
+                                    AKSI
                                 </th>
                             )}
                         </tr>

@@ -227,15 +227,6 @@ export default function PenilaianMingguanPage() {
                     onMingguChange={setSelectedMinggu}
                     isLoading={isLoadingMinggu}
                 />
-
-                {userRole === "asisten" && (
-                    <button
-                        onClick={() => handleReview(null)}
-                        className="px-4 py-2 bg-primary text-white rounded-lg"
-                    >
-                        + Tambah Nilai
-                    </button>
-                )}
             </div>
 
             <main className="p-4">
