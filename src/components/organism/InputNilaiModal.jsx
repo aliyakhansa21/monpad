@@ -6,7 +6,7 @@ import api from '@/lib/api';
 
 const GradeInput = ({ label, value, onChange, gradeTypeId }) => (
     <div className="flex flex-col space-y-2">
-        <label className="text-sm font-medium text-primary font-semibold">{label}</label>
+        <label className="text-sm font-medium text-background-dark font-semibold">{label}</label>
         <div className="flex items-center space-x-1 border border-primary rounded-sm px-2 py-1 bg-white">
             <button 
                 onClick={() => onChange(gradeTypeId, Math.max(0, value - 1))} 
@@ -217,7 +217,7 @@ const InputNilaiModal = ({
                 
                 {/* Header Modal */}
                 <div className="px-8 py-5 border-b border-gray-200 text-center">
-                    <h2 className="text-2xl font-semibold text-primary">Penilaian Mingguan</h2>
+                    <h2 className="text-2xl font-semibold text-background-dark">Penilaian Mingguan</h2>
                 </div>
 
                 {/* Body Form */}
@@ -231,7 +231,7 @@ const InputNilaiModal = ({
                     <div className="grid grid-cols-2 gap-8">
                         {/* Kelompok */}
                         <div className="flex flex-col space-y-1">
-                            <label className="text-sm font-semibold font-medium text-primary">
+                            <label className="text-sm font-semibold font-medium text-background-dark">
                                 Kelompok
                             </label>
                             {isLoadingProjects ? (
@@ -252,7 +252,7 @@ const InputNilaiModal = ({
 
                         {/* Nama Proyek */}
                         <div className="flex flex-col space-y-1">
-                            <label className="text-sm font-semibold font-medium text-primary">
+                            <label className="text-sm font-semibold font-medium text-background-dark">
                                 Nama Proyek
                             </label>
                             {isLoadingProjects ? (
@@ -289,7 +289,7 @@ const InputNilaiModal = ({
                     </div>
 
                     <div className="flex flex-col space-y-2 pt-4">
-                        <label className="text-sm font-medium text-primary font-semibold">Catatan</label>
+                        <label className="text-sm font-medium text-background-dark font-semibold">Catatan</label>
                         <textarea
                             value={formData.notes}
                             onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
