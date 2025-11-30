@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppSidebar } from "@/components/organism/app-sidebar";
 import DashboardHeader from "@/components/organism/DashboardHeader";
 import MatrixTable from "@/components/organism/MatrixTable";
@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function MatriksNilaiPage() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-    const [gradeTypeData, setGradeTypeData] = useState([]); 
+    const [matrixData, setMatrixData] = useState([]); 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [gradeTypesList, setGradeTypesList] = useState([]); 
     const [isLoading, setIsLoading] = useState(false);
@@ -19,8 +19,14 @@ export default function MatriksNilaiPage() {
     const [totalPages, setTotalPages] = useState(1); 
     const [dynamicHeaders, setDynamicHeaders] = useState([]);
     const [totalWeekWeight, setTotalWeekWeight] = useState(0);     
-    const { isLoggedIn, isLoading: authLoading } = useAuth();
+    const { isLoggedIn, isLoading: authLoading, role } = useAuth(); 
+    const userRole = role;
     
+    // Prevent multiple fetches
+    const isInitialMount = useRef(true);
+    const isFetching = useRef(false);
+    
+    // fetch week types untuk header kolom
     const fetchWeekTypeData = useCallback(async () => {
         try {
             console.log("📡 Fetching week types...");
@@ -37,21 +43,20 @@ export default function MatriksNilaiPage() {
             const total = (weekTypeData.data || []).reduce((sum, wt) => sum + wt.percentage, 0);
             setTotalWeekWeight(total);
             
-            // Generate dynamic headers
+            // Generate dynamic headers dari week types
             const newHeaders = (weekTypeData.data || []).map(wt => ({
-                key: `nilai_${wt.id}`, 
-                label: `${wt.name}\n${wt.percentage}%`, 
+                key: `week_${wt.id}`, 
+                label: `${wt.name}\n${wt.percentage}%`,
+                weekId: wt.id,
             }));
             setDynamicHeaders(newHeaders);
             
             return weekTypeData; 
         } catch (error) {
             console.error("❌ Error fetching week types:", error.message);
-            
             if (error.response?.status !== 401) {
                 alert("Gagal memuat struktur penilaian. Silakan refresh halaman.");
             }
-            
             return null;
         }
     }, []); 
@@ -72,39 +77,119 @@ export default function MatriksNilaiPage() {
             return data;
         } catch (error) {
             console.error("❌ Error fetching grade types list:", error.message);
-            
             if (error.response?.status !== 401) {
                 alert("Gagal memuat daftar aspek penilaian.");
             }            
             return null;
         }
     }, []);
+    
+    // Transform data untuk table 
+    const transformMatrixData = (weekData, groupData, projectData, finalizationData, headers) => {
+        try {
+            console.log("🔄 Transforming data...");
+            
+            // Transform ke format table
+            const transformedData = groupData.map(group => {
+                const project = projectData.find(p => p.id === group.project_id);
+                
+                // Ambil data nilai per minggu untuk group ini
+                const weekGrades = {};
+                weekData
+                    .filter(w => w.project_id === project?.id)
+                    .forEach(week => {
+                        weekGrades[`week_${week.week_type.id}`] = week.total_grade || 0;
+                    });
+
+                // Hitung total skor
+                let totalSkor = 0;
+                headers.forEach(header => {
+                    const weekId = header.weekId;
+                    const grade = weekGrades[header.key] || 0;
+                    const percentage = parseInt(header.label.split('\n')[1].replace('%', ''));
+                    totalSkor += (grade * percentage) / 100;
+                });
+
+                // Ambil review dosen dari week data
+                const latestWeek = weekData
+                    .filter(w => w.project_id === project?.id)
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
+                // Ambil confirmed status dari finalization data
+                // Asumsi: finalization per project (ambil salah satu member)
+                const finalization = finalizationData.find(f => 
+                    group.anggota.some(member => member.id === f.user?.id)
+                );
+
+                return {
+                    id: group.id,
+                    kelompok_id: group.nama,
+                    nama_proyek: project?.nama_projek || '-',
+                    project_id: project?.id,
+                    ...weekGrades, 
+                    total_skor: totalSkor.toFixed(2),
+                    catatan: latestWeek?.notes || '-',
+                    review_dosen: latestWeek?.review?.note || '-',
+                    confirmed: finalization?.confirmed || 0,
+                };
+            });
+
+            console.log("✅ Data transformed:", transformedData);
+            return transformedData;
+        } catch (error) {
+            console.error("❌ Error transforming data:", error);
+            return [];
+        }
+    };
         
     const fetchMatrixData = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            console.log("📡 Fetching matrix data...");
-            
-            await fetchWeekTypeData(); 
-            
-            const matrixResponse = await api.get('/grade-type');
-            
-            if (matrixResponse.status !== 200) {
-                throw new Error("Gagal mengambil data baris matriks.");
-            }
+        if (isFetching.current) {
+            console.log("⏭️ Fetch already in progress, skipping...");
+            return;
+        }
 
-            const matrixData = matrixResponse.data;
-            console.log("✅ Matrix data fetched:", matrixData);
-            setGradeTypeData(matrixData.data || matrixData);
+        isFetching.current = true;
+        setIsLoading(true);
+        
+        try {
+            console.log("📡 Fetching all matrix data...");
+            
+            // Fetch semua data yang dibutuhkan
+            const [weekTypes, groups, projects, finalization, weekData] = await Promise.all([
+                fetchWeekTypeData(),
+                api.get('/group').then(r => r.data.data || []),
+                api.get('/project').then(r => r.data.data || []),
+                api.get('/finalization').then(r => r.data.data || []),
+                api.get('/week').then(r => r.data.data || []),
+            ]);
+
+            console.log("✅ All data fetched");
+
+            const headers = (weekTypes?.data || []).map(wt => ({
+                key: `week_${wt.id}`, 
+                label: `${wt.name}\n${wt.percentage}%`,
+                weekId: wt.id,
+            }));
+
+            // Transform data - PASS headers as parameter
+            const transformed = transformMatrixData(
+                weekData,
+                groups,
+                projects,
+                finalization,
+                headers
+            );
+
+            setMatrixData(transformed);
 
         } catch (error) {
             console.error("❌ Error fetching matrix data:", error.message);
-            
             if (error.response?.status !== 401) {
                 alert("Gagal memuat data matriks. Silakan refresh halaman.");
             }
         } finally {
             setIsLoading(false);
+            isFetching.current = false;
         }
     }, [fetchWeekTypeData]); 
 
@@ -112,21 +197,18 @@ export default function MatriksNilaiPage() {
         return [
             { key: 'kelompok_id', label: 'KELOMPOK' },
             { key: 'nama_proyek', label: 'NAMA PROYEK' },
-            { key: 'catatan', label: 'CATATAN' },
-            { key: 'review_dosen', label: 'REVIEW DOSEN' },
-            { key: 'aksi', label: 'AKSI' },
-        ];        
+        ];
     }, []);
 
     useEffect(() => {
-        if (isLoggedIn && !authLoading) {
-            console.log("🔄 User logged in, fetching data...");
+        if (isLoggedIn && !authLoading && isInitialMount.current) {
+            console.log("🔄 Initial data fetch...");
+            isInitialMount.current = false;
+            
             fetchGradeTypesList();
             fetchMatrixData();
-        } else if (!isLoggedIn && !authLoading) {
-            console.log("⚠️ User not logged in, data fetch skipped");
         }
-    }, [isLoggedIn, authLoading, fetchGradeTypesList, fetchMatrixData]);
+    }, [isLoggedIn, authLoading]); 
 
     const handleModalSubmit = async (payload) => { 
         try {
@@ -139,6 +221,7 @@ export default function MatriksNilaiPage() {
             
             console.log("✅ Week type berhasil ditambahkan:", response.data);
             
+            isInitialMount.current = true;
             await fetchMatrixData();
             await fetchGradeTypesList(); 
             
@@ -187,14 +270,67 @@ export default function MatriksNilaiPage() {
     const handleReview = (item) => {
         console.log("📝 Membuka review untuk proyek:", item.nama_proyek);
     };
+
+    const handleToggleFinalization = async (item) => {
+        const newStatus = item.confirmed === 1 ? 0 : 1;
+        const statusText = newStatus === 1 ? 'finalisasi' : 'batal finalisasi';
+        
+        if (!confirm(`Apakah Anda yakin ingin ${statusText} nilai untuk kelompok ${item.kelompok_id}?`)) {
+            return;
+        }
+
+        try {
+            console.log(`🔄 Mengubah status finalisasi untuk project ID: ${item.project_id}`);
+            
+            // POST /finalization/{finalization}
+            const response = await api.post(`/finalization/${item.project_id}`, {
+                confirmed: newStatus
+            });
+
+            if (response.status === 200 || response.status === 201) {
+                console.log("✅ Status finalisasi berhasil diubah:", response.data);
+                
+                // Refresh data
+                isInitialMount.current = true;
+                await fetchMatrixData();
+                
+                alert(`✅ Nilai berhasil ${statusText}!`);
+            }
+        } catch (error) {
+            console.error("❌ Error updating finalization:", error);
+            
+            let errorMessage = 'Gagal mengubah status finalisasi.';
+            
+            if (error.response) {
+                const status = error.response.status;
+                const errorData = error.response.data;
+                
+                if (status === 405) {
+                    errorMessage = "Method tidak diizinkan. Pastikan endpoint API sudah benar.";
+                } else if (status === 404) {
+                    errorMessage = "Data finalisasi tidak ditemukan.";
+                } else if (status === 422 && errorData.errors) {
+                    const firstErrorKey = Object.keys(errorData.errors)[0];
+                    const firstErrorMessage = errorData.errors[firstErrorKey][0];
+                    errorMessage = `Validasi Gagal: ${firstErrorMessage}`;
+                } else if (status === 401) {
+                    errorMessage = "Sesi kadaluarsa. Mohon login ulang.";
+                } else if (status === 403) {
+                    errorMessage = "Anda tidak memiliki akses untuk mengubah finalisasi.";
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+            } else if (error.request) {
+                errorMessage = "Tidak dapat terhubung ke server. Periksa koneksi internet.";
+            }
+            
+            alert(errorMessage);
+        }
+    };
     
     const handleSidebarToggle = () => {
         setIsSidebarExpanded(!isSidebarExpanded);
     };
-
-    const mainContentMargin = isSidebarExpanded 
-        ? "md:ml-[256px]" 
-        : "md:ml-[72px]";
 
     if (authLoading) {
         return (
@@ -223,26 +359,28 @@ export default function MatriksNilaiPage() {
             <DashboardHeader title="Matriks Nilai"/>                        
             <main className="p-0 md:p-4">
                 <MatrixHeaderButton onClick={handleInputParameter} />                            
-                    {isLoading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <div className="text-center">
-                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mb-3 mx-auto"></div>
-                                    <p className="text-gray-600">Memuat data matriks...</p>
-                                </div>
-                            </div>
-                    ) : (
-                        <MatrixTable
-                            data={gradeTypeData} 
-                            columns={STATIC_COLUMNS}
-                            totalWeekWeight={totalWeekWeight}
-                            dynamicHeaders={dynamicHeaders}
-                            onSearch={handleSearch}
-                            onReview={handleReview}
-                            totalPages={totalPages}
-                            currentPage={currentPage}
-                            onPageChange={handlePageChange}
-                        />
-                    )}
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mb-3 mx-auto"></div>
+                            <p className="text-gray-600">Memuat data matriks...</p>
+                        </div>
+                    </div>
+                ) : (
+                    <MatrixTable
+                        data={matrixData} 
+                        columns={STATIC_COLUMNS}
+                        totalWeekWeight={totalWeekWeight}
+                        dynamicHeaders={dynamicHeaders}
+                        onSearch={handleSearch}
+                        onReview={handleReview}
+                        totalPages={totalPages}
+                        currentPage={currentPage}
+                        onPageChange={handlePageChange}
+                        userRole={userRole} 
+                        onToggleFinalization={handleToggleFinalization}
+                    />
+                )}
             </main>
             <ParameterPenilaianModal
                 isOpen={isModalOpen}
