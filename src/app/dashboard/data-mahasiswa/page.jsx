@@ -5,9 +5,10 @@ import DashboardHeader from "@/components/organism/DashboardHeader";
 import DataTable from "@/components/organism/DataTable";
 import Footer from "@/components/organism/Footer";
 import MahasiswaModal from "@/components/organism/MahasiswaModal";
+import api from "@/lib/api"; 
 
 const MAHASISWA_COLUMNS = [
-    { key: 'nama', label: 'Nama' },
+    { key: 'username', label: 'Nama' },
     { key: 'email', label: 'Email' },
     { key: 'nim', label: 'NIM' },
     { key: 'angkatan', label: 'Angkatan' },
@@ -26,23 +27,16 @@ export default function DataMahasiswaPage() {
     const [mahasiswaData, setMahasiswaData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
     
     const fetchMahasiwaData = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`${LARAVEL_API_BASE_URL}/mahasiswa`);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Gagal mengambil data dari server: ${response.status} - ${errorText}`);
-            }
-
-            const result = await response.json();
-            setMahasiswaData(result.data); 
+            const response = await api.get('/mahasiswa');            
+            setMahasiswaData(response.data.data); 
         } catch (error) {
-            console.error("Gagal mengambil data:", error);
-            alert(`Gagal memuat data: ${error.message}`);
+            console.error("Gagal mengambil data:", error.response || error);
+            const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat memuat data.";
+            alert(`Gagal memuat data: ${errorMessage}`);
             setMahasiswaData([]);
         } finally {
             setIsLoading(false);
@@ -81,57 +75,53 @@ export default function DataMahasiswaPage() {
         const id = mahasiswaToDelete.id;
 
         try {
-            const response = await fetch(`${LARAVEL_API_BASE_URL}/mahasiswa/${id}`, { 
-                method: 'DELETE',
-            });
-            if (response.ok) {
+            const response = await api.delete(`/mahasiswa/${id}`);            
+
+            if (response.status === 200 || response.status === 204) {
                 await fetchMahasiwaData(); 
                 alert("Data Mahasiswa berhasil dihapus!");
-            } else {
-                const errorText = await response.text();
-                throw new Error(`Gagal menghapus data: ${response.status} - ${errorText}`);
+            } else {                 
+                throw new Error("Gagal menghapus data."); 
             }
         } catch (error) {
-            console.error("Error saat menghapus data: ", error);
-            alert("Gagal menghapus data. Cek console untuk detail.");
+            console.error("Error saat menghapus data: ", error.response || error);
+            const errorMessage = error.response?.data?.message || error.message || "Cek console untuk detail.";
+            alert(`Gagal menghapus data: ${errorMessage}`);
         }    
     };
 
     const handleModalSubmit = async (formData) => { 
         if (modalMode === 'add') {
-            try {
-                const response = await fetch(`${LARAVEL_API_BASE_URL}/mahasiswa`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(formData), 
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    let errorMessage = `Gagal menyimpan data ke server: ${response.status}`;
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        errorMessage = errorData.message || errorMessage;
-                    } catch {
-                        errorMessage = `${errorMessage} - ${errorText.substring(0, 100)}...`;
-                    }
-                    throw new Error(errorMessage);
-                }
+            try {               
+                const response = await api.post('/mahasiswa', formData);
 
                 await fetchMahasiwaData(); 
 
                 alert('Data berhasil ditambahkan!');
 
             } catch (error) {
-                console.error("Error saat menambahkan data:", error);
-                alert(`Gagal menambahkan data: ${error.message}`);
+                console.error("Error saat menambahkan data:", error.response || error);
+                const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat menambahkan data.";
+                alert(`Gagal menambahkan data: ${errorMessage}`);
             }
 
-        } else {            
-            alert('Data berhasil diperbarui!');
+        } else if (modalMode === 'edit' && selectedMahasiswa) { 
+            try {
+                const id = selectedMahasiswa.id;
+                const response = await api.put(`/mahasiswa/${id}`, formData);
+
+                await fetchMahasiwaData();
+
+                alert('Data berhasil diperbarui!');
+
+            } catch (error) {
+                console.error("Error saat memperbarui data:", error.response || error);
+                const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat memperbarui data.";
+                alert(`Gagal memperbarui data: ${errorMessage}`);
+            }
+
+        } else {
+            alert('Mode tidak valid atau data mahasiswa tidak terpilih.');
         }
         setIsModalOpen(false); 
     };
@@ -151,9 +141,10 @@ export default function DataMahasiswaPage() {
                     onAdd={handleAddData}
                     onEdit={handleEditData}
                     onDelete={onDeleteMahasiswa}
-                    totalPages={5}
+                    totalPages={5} 
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
+                    isLoading={isLoading} 
                 />
             </main>
             <MahasiswaModal
