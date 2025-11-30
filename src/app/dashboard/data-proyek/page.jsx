@@ -1,14 +1,13 @@
 "use client";
-import { AppSidebar } from "@/components/organism/app-sidebar";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import DashboardHeader from "@/components/organism/DashboardHeader";
 import DataTable from "@/components/organism/DataTable";
-import Footer from "@/components/organism/Footer";
 import ProjectModal from "@/components/organism/ProjectModal";
+import api from '@/lib/api'; 
 
 const PROJECT_COLUMNS = [
     { key: 'nama_projek', label: 'Nama Proyek' },
-    { key: 'semester', label: 'Semester' },
+    { key: 'semester', label: 'Saemester' },
     { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
     { 
         key: 'owner.username', 
@@ -32,19 +31,16 @@ const PROJECT_COLUMNS = [
                 return asistenData.map(a => a.username).join(', ');
                 
             } else if (typeof asistenData === 'object' && asistenData.username) {
-                return asistenData.username;                 
+                return asistenData.username;         
             } else {
                 return 'Tidak Ada';
             }
         }
     },
     { key: 'actions', label:'Aksi' },
-
-    
 ];
 
 export default function DataProjectPage() {
-    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,26 +51,18 @@ export default function DataProjectPage() {
     const [dosenList, setDosenList] = useState([]);
     const [asistenList, setAsistenList] = useState([]);
 
-    const LARAVEL_API_BASE_URL = 'https://simpad.novarentech.web.id/api';
-
     const fetchProjectData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const url = `${LARAVEL_API_BASE_URL}/project`;
-            const response = await fetch(url);
+            const response = await api.get('/project');
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Gagal mengambil data dari server: ${response.status} - ${errorText}`);
-            }
-            
-            const data = await response.json();
-            console.log('Data yang diterima dari API:', data);
+            const data = response.data;
             setProjectData(data.data || data); 
 
         } catch (error) {
-            console.error("Error fetching project data:", error);
-            alert(`Gagal memuat data: ${error.message}`);
+            console.error("Error fetching project data:", error.response || error);
+            const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat memuat data proyek.";
+            alert(`Gagal memuat data: ${errorMessage}`);
         } finally {
             setIsLoading(false);
         }
@@ -83,17 +71,14 @@ export default function DataProjectPage() {
     const fetchUserLists = useCallback(async () => {
         try {
             const [dosenRes, asistenRes] = await Promise.all([
-                fetch(`${LARAVEL_API_BASE_URL}/dosen`),
-                fetch(`${LARAVEL_API_BASE_URL}/asisten`),
+                api.get('/dosen'),
+                api.get('/asisten'),
             ]);
 
-            const dosenData = await dosenRes.json();
-            const asistenData = await asistenRes.json();
-
-            setDosenList(dosenData.data || dosenData);
-            setAsistenList(asistenData.data || asistenData);
+            setDosenList(dosenRes.data.data || dosenRes.data);
+            setAsistenList(asistenRes.data.data || asistenRes.data);
         } catch (error) {
-            console.error("Error fetching user lists:", error);
+            console.error("Error fetching user lists:", error.response || error);
         }
     }, []);
 
@@ -101,11 +86,6 @@ export default function DataProjectPage() {
         fetchProjectData();
         fetchUserLists();
     }, [fetchProjectData, fetchUserLists]);
-
-
-    const toggleSidebar = () => {
-        setIsSidebarExpanded(!isSidebarExpanded);
-    };
 
     const handleSearch = (term) => {
         setSearchTerm(term);
@@ -132,19 +112,16 @@ export default function DataProjectPage() {
         const id = projectToDelete.id;
         
         try{
-            const response = await fetch(`${LARAVEL_API_BASE_URL}/project/${id}`, {
-                method: 'DELETE',
-            });
-            if (response.ok) {
+            const response = await api.delete(`/project/${id}`);
+            
+            if (response.status === 200 || response.status === 204) {
                 await fetchProjectData();
                 alert("Data project berhasil dihapus!");
-            } else {
-                const errorText = await response.text();
-                throw new Error("Gagal menghapus data: ${response.status} - ${errorText}");
             }
         } catch (error) {
-            console.error("Gagal menghapus data: ", error);
-            alert("Gagal menghapus data. Cek console untuk detail.");
+            console.error("Gagal menghapus data: ", error.response || error);
+            const errorMessage = error.response?.data?.message || error.message || "Cek console untuk detail.";
+            alert(`Gagal menghapus data: ${errorMessage}`);
         }
     };
     
@@ -152,47 +129,32 @@ export default function DataProjectPage() {
     const handleModalSubmit = async (formData) => {
         if (modalMode === 'add') {
             try {
-                const response = await fetch(`${LARAVEL_API_BASE_URL}/project`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    let errorMessage = "Gagal menyimpan data ke server: ${response.status}";
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        errorMessage = errorData.message || errorMessage;
-                    } catch {
-                        errorMessage = `${errorMessage} - ${errorText.substring(0, 100)}...`;
-                    }
-                    throw new Error(errorMessage);
-                }
+                const response = await api.post('/project', formData);
 
                 await fetchProjectData();
-
                 alert("Data berhasil ditambahkan!");
             } catch (error) {
-                console.error('Error saat menambahkan data:', error);
-                let errorMessage = "Terjadi kesalahan yang tidak diketahui.";
-                if (error && error.status === 500) {
-                    errorMessage = "Kesalahan Server Internal (500). Mohon hubungi tim Backend.";
-                } else if (error && error.message) {
-                    errorMessage = error.message;
-                }
+                console.error('Error saat menambahkan data:', error.response || error);
+                const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat menambahkan data.";
                 alert(`Gagal menambahkan data: ${errorMessage}`);
             }
+        } else if (modalMode === 'edit' && selectedProject) {
+            try {
+                const id = selectedProject.id;
+                const response = await api.put(`/project/${id}`, formData);
+
+                await fetchProjectData();
+                alert("Data berhasil diperbarui!");
+            } catch (error) {
+                console.error('Error saat memperbarui data:', error.response || error);
+                const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat memperbarui data.";
+                alert(`Gagal memperbarui data: ${errorMessage}`);
+            }
         } else {
-            alert("Data berhasil diperbarui!");
+            alert('Mode tidak valid atau data proyek tidak terpilih.');
         }
         setIsModalOpen(false);
     };
-
-    const mainContentMargin = isSidebarExpanded ? "ml-[256px]" : "ml-[72px]" ;
     
     const processedData = useMemo(() => {
         return projectData.map(project => ({
@@ -208,35 +170,30 @@ export default function DataProjectPage() {
     return (
         <>
             <DashboardHeader title="Proyek & Kelompok"/>
-                <main className="p-4">
-                    {isLoading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <p className="ml-2 text-gray-600">Memuat Data...</p>
-                    </div>
-                    ) : (
-                    <DataTable
-                        data={processedData}
-                        columns={PROJECT_COLUMNS}
-                        title="Data Project"
-                        onSearch={handleSearch}
-                        onAdd={handleAddData}
-                        onEdit={handleEditData}
-                        onDelete={onDeleteProject}
-                        totalPages={5} 
-                        currentPage={currentPage}
-                        onPageChange={handlePageChange}
-                    />
-                    )}
-                </main>
-                <ProjectModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSubmit={handleModalSubmit}
-                    initialData={selectedProject}
-                    mode={modalMode}
-                    dosenList={dosenList}
-                    asistenList={asistenList}
+            <main className="p-4">
+                <DataTable
+                    data={processedData}
+                    columns={PROJECT_COLUMNS}
+                    title="Data Project"
+                    onSearch={handleSearch}
+                    onAdd={handleAddData}
+                    onEdit={handleEditData}
+                    onDelete={onDeleteProject}
+                    totalPages={5} 
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                    isLoading={isLoading} 
                 />
+            </main>
+            <ProjectModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleModalSubmit}
+                initialData={selectedProject}
+                mode={modalMode}
+                dosenList={dosenList}
+                asistenList={asistenList}
+            />
         </>
     )
 
