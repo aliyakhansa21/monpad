@@ -15,8 +15,8 @@ const MatrixTable = ({
     dynamicHeaders, 
     title, 
     onSearch, 
-    onReview, 
-    onToggleFinalization, 
+    // onReview, 
+    // onToggleFinalization, 
     userRole,
     totalPages, 
     currentPage, 
@@ -67,22 +67,7 @@ const MatrixTable = ({
                             {/* Total Skor */}
                             <th rowSpan={2} className={headerBaseClasses}>
                                 TOTAL SKOR
-                            </th>
-                            
-                            {/* Catatan */}
-                            <th rowSpan={2} className={headerBaseClasses}>
-                                CATATAN
-                            </th>
-                            
-                            {/* Review Dosen */}
-                            <th rowSpan={2} className={headerBaseClasses}>
-                                REVIEW DOSEN
-                            </th>
-                            
-                            {/* Status/Finalisasi */}
-                            <th rowSpan={2} className={headerBaseClasses}>
-                                {IS_LECTURER ? 'FINALISASI' : 'STATUS'}
-                            </th>
+                            </th>                            
                         </tr>
                         
                         <tr>                            
@@ -113,46 +98,7 @@ const MatrixTable = ({
                                 {/* Total Skor */}
                                 <td className={`${cellBaseClasses} font-bold`}>
                                     {item.total_skor || '0'}%
-                                </td>
-                                
-                                {/* Catatan */}
-                                <td className={cellBaseClasses}>
-                                    {item.catatan || '-'}
-                                </td>
-                                
-                                {/* Review Dosen */}
-                                <td className={cellBaseClasses}>
-                                    {item.review_dosen || '-'}
-                                </td>
-                                
-                                {/* Toggle Switch */}
-                                <td className="px-3 py-4 md:px-6 md:py-4 text-center">
-                                    {IS_ASSISTANT ? (
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                            item.confirmed === 1 
-                                                ? 'bg-green-100 text-green-800' 
-                                                : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                            {item.confirmed === 1 ? 'Finalized' : 'Draft'}
-                                        </span>
-                                    ) : IS_LECTURER ? (
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only peer"
-                                                checked={item.confirmed === 1}
-                                                onChange={() => onToggleFinalization(item)}
-                                            />
-                                            <div className={`w-11 h-6 rounded-full peer peer-focus:outline-none peer-focus:ring-4 transition-colors ${
-                                                item.confirmed === 1
-                                                    ? 'bg-green-500 peer-focus:ring-green-300' 
-                                                    : 'bg-red-500 peer-focus:ring-red-300'
-                                            } peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
-                                        </label>
-                                    ) : (
-                                        <span>-</span>
-                                    )}
-                                </td>
+                                </td>                                                                
                             </tr>
                         ))}
                     </tbody>
@@ -181,8 +127,8 @@ MatrixTable.propTypes = {
     dynamicHeaders: PropTypes.array.isRequired,
     title: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
-    onReview: PropTypes.func.isRequired,
-    onToggleFinalization: PropTypes.func, 
+    // onReview: PropTypes.func.isRequired,
+    // onToggleFinalization: PropTypes.func, 
     userRole: PropTypes.string.isRequired,
     totalPages: PropTypes.number,
     currentPage: PropTypes.number.isRequired,
@@ -193,7 +139,7 @@ MatrixTable.propTypes = {
 MatrixTable.defaultProps = {
     title: "Data Matriks Nilai",
     totalPages: 1,
-    onToggleFinalization: () => {},
+    // onToggleFinalization: () => {},
 };
 
 export default MatrixTable;
