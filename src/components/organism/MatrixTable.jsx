@@ -45,7 +45,6 @@ const MatrixTable = ({
                 <span className="text-xl font-bold text-gray-800">{title}</span> 
                 <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto justify-end"> 
                     <SearchInput placeholder="Search" onChange={(e) => onSearch(e.target.value)} />
-                    <span className="text-sm min-w-max">Show by: All</span>
                 </div>
             </div>
 
