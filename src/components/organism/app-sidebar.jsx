@@ -10,24 +10,24 @@ const menus = {
     {title: "Data Dosen", href: "/dashboard/data-dosen"},
     {title: "Data Asisten", href: "/dashboard/data-asisten"},
     {title: "Data Mahasiswa", href: "/dashboard/data-mahasiswa"},
-    {title: "Nilai Individu Mahasiswa", href: "/dashboard/nilai-individu-mahasiswa"},
+    {title: "Nilai Individu Mahasiswa", href: "/dashboard/nilai-individu"},
     {title: "Proyek & Kelompok", href: "/dashboard/data-proyek"},
     {title: "Matriks Nilai", href: "/dashboard/matriks-nilai"},
-    {title: "Laporan Progres", href: "/dashboard/penilaian-progres"},
+    {title: "Laporan Progres", href: "/dashboard/penilaian-mingguan"},
   ],
   asisten: [
     {title: "Beranda", href: "/dashboard/asisten"},
     {title: "List Proyek", href: "/dashboard/list-proyek"},
     {title: "List Peserta", href: "/dashboard/list-peserta"},
     {title: "Presensi Peserta", href: "/dashboard/presensi"},
-    {title: "Penilaian Progres", href: "/dashboard/penilaian-progres"}, 
-    {title: "Laporan Mingguan", href: "/dashboard/penilaian-mingguan"},
+    {title: "Laporan Progres", href: "/dashboard/laporan-progres"}, 
+    {title: "Penilaian Mingguan", href: "/dashboard/penilaian-mingguan"},
   ],
   mahasiswa: [
     {title: "Beranda", href: "/dashboard/mahasiswa"},
-    {title: "Progres Proyek", href: "/dashboard/progres-proyek"},
+    // {title: "Progres Proyek", href: "/dashboard/progres-proyek"},
     {title: "Nilai Anggota Tim", href: "/dashboard/penilaian-anggota"},
-    {title: "Nilai Akhir", href: "/dashboard/nilai-akhir"},
+    {title: "Nilai Akhir", href: "/dashboard/nilai-akhir-mahasiswa"},
   ]
 };
 
