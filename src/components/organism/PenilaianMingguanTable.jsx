@@ -71,9 +71,27 @@ const PenilaianMingguanTable = ({
             </td>
         );
     };
+    
+    const renderAsistenNotesCell = (item) => {
+        const displayNote = item.notes || '-';
+        return (
+            <td className="px-3 py-4 md:px-6 md:py-4 text-center max-w-xs truncate text-sm">
+                {displayNote}
+            </td>
+        );
+    };
 
+    const renderLecturerReviewCell = (item) => {
+        const note = item.review?.note || '-'; 
+        return (
+            <td className="px-3 py-4 md:px-6 md:py-4 text-center max-w-xs truncate text-sm">
+                {note}
+            </td>
+        );
+    };
+    
     const renderNotesCell = (item) => {
-        const displayNote = item.notes || item.review?.note || 'Catatan di sini';
+        const displayNote = item.review?.note || item.notes || 'Catatan di sini'; 
         return (
             <td className="px-3 py-4 md:px-6 md:py-4 text-center max-w-xs truncate text-sm">
                 {displayNote}
@@ -131,7 +149,6 @@ const PenilaianMingguanTable = ({
 
                     {userRole === "asisten" && (
                         <button
-                            // Panggil prop onReview dari parent
                             onClick={() => onReview(null)} 
                             className="px-4 py-2 bg-primary text-white rounded-lg whitespace-nowrap"
                         >
@@ -169,11 +186,20 @@ const PenilaianMingguanTable = ({
                                 TOTAL SKOR
                             </th>
                             
+                            {IS_ASSISTANT && (
+                                <th 
+                                    rowSpan={2} 
+                                    className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
+                                >
+                                    CATATAN ASISTEN
+                                </th>
+                            )}
+
                             <th 
                                 rowSpan={2} 
                                 className="px-3 py-3 md:px-6 md:py-3 bg-primary text-center text-xs font-medium text-white uppercase tracking-wider"
                             >
-                                CATATAN
+                                {IS_LECTURER ? 'CATATAN' : 'REVIEW DOSEN'}
                             </th>
 
                             {IS_LECTURER && (
@@ -220,7 +246,10 @@ const PenilaianMingguanTable = ({
                                 ))}
 
                                 {renderTotalScoreCell(item)}
-                                {renderNotesCell(item)}
+
+                                {IS_ASSISTANT && renderAsistenNotesCell(item)}
+
+                                {IS_ASSISTANT ? renderLecturerReviewCell(item) : renderNotesCell(item)}
 
                                 {IS_LECTURER && (
                                     <td className="px-3 py-4 text-center">

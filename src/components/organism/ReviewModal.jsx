@@ -81,7 +81,7 @@ const ReviewModal = ({ isOpen, onClose, onSaveSuccess, itemToReview, gradeTypes 
                 <form onSubmit={handleSubmit} className="p-6">                    
                     {/* Review Input */}
                     <div className="mb-6">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-semibold text-background-dark mb-2">
                             Review Dosen <span className="text-red-500">*</span>
                         </label>
                         <textarea
@@ -89,7 +89,7 @@ const ReviewModal = ({ isOpen, onClose, onSaveSuccess, itemToReview, gradeTypes 
                             onChange={(e) => setReviewNote(e.target.value)}
                             placeholder="Masukkan review atau catatan untuk kelompok ini..."
                             rows={5}
-                            className="w-full px-4 py-3 border border-primary rounded-lg focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+                            className="w-full px-4 py-3 border border-primary rounded-lg focus:ring-2 focus:ring-background-dark focus:border-background-dark resize-none"
                             required
                         />
                     </div>
