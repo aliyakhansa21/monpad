@@ -21,7 +21,7 @@ const MatrixTable = ({
     totalPages, 
     currentPage, 
     onPageChange, 
-    totalWeekWeight, 
+    totalWeekWeight, // Diperlukan untuk header Total Skor
 }) => {
 
     const IS_LECTURER = userRole === 'dosen';
@@ -34,6 +34,10 @@ const MatrixTable = ({
         const value = item[header.key] || 0;
         return <td className={cellBaseClasses}>{value}</td>;
     };
+
+    // Filter columns untuk menghapus kolom 'total_skor' statis yang duplikat
+    // Kolom ini seharusnya hanya ada di akhir.
+    const staticColumns = columns.filter(col => col.key !== 'total_skor');
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">            
@@ -49,7 +53,8 @@ const MatrixTable = ({
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            {columns.map(col => (
+                            {/* 1. RENDER STATIC COLUMNS (TANPA TOTAL SKOR DUPLIKAT) */}
+                            {staticColumns.map(col => (
                                 <th 
                                     rowSpan={2} 
                                     key={col.key} 
@@ -64,15 +69,17 @@ const MatrixTable = ({
                                 PENILAIAN
                             </th>
                             
-                            {/* Total Skor */}
+                            {/* 2. HEADER TOTAL SKOR AKHIR (Mencantumkan total bobot) */}
                             <th rowSpan={2} className={headerBaseClasses}>
-                                TOTAL SKOR
+                                TOTAL SKOR ({totalWeekWeight}%)
                             </th>                            
                         </tr>
                         
                         <tr>                            
+                            {/* 3. SUB-HEADER PENILAIAN (Memastikan persentase ada di baris kedua) */}
                             {dynamicHeaders.map(col => (
                                 <th key={col.key} className={headerBaseClasses}>
+                                    {/* col.label sudah mengandung nama dan persentase yang dipisahkan newline \n */}
                                     <div className="whitespace-pre-line">
                                         {col.label}
                                     </div>
@@ -83,21 +90,23 @@ const MatrixTable = ({
                     <tbody className="bg-white divide-y divide-gray-200">
                         {data.map((item, index) => (
                             <tr key={item.id} className={index % 2 === 1 ? 'bg-background-light' : ''}>                                
-                                {columns.map(column => (
+                                {/* 4. CELL STATIC COLUMNS (TANPA TOTAL SKOR DUPLIKAT) */}
+                                {staticColumns.map(column => (
                                     <td key={column.key} className={cellBaseClasses}>
                                         {item[column.key] || '-'}
                                     </td>
                                 ))}
 
+                                {/* Cell Nilai Dinamis */}
                                 {dynamicHeaders.map(header => (
                                     <React.Fragment key={header.key}>
                                         {renderDynamicCell(item, header)}
                                     </React.Fragment>
                                 ))}
                                 
-                                {/* Total Skor */}
+                                {/* 5. CELL TOTAL SKOR AKHIR */}
                                 <td className={`${cellBaseClasses} font-bold`}>
-                                    {item.total_skor || '0'}%
+                                    {item.total_skor || '0'}
                                 </td>                                                                
                             </tr>
                         ))}
@@ -127,8 +136,6 @@ MatrixTable.propTypes = {
     dynamicHeaders: PropTypes.array.isRequired,
     title: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
-    // onReview: PropTypes.func.isRequired,
-    // onToggleFinalization: PropTypes.func, 
     userRole: PropTypes.string.isRequired,
     totalPages: PropTypes.number,
     currentPage: PropTypes.number.isRequired,
@@ -139,7 +146,6 @@ MatrixTable.propTypes = {
 MatrixTable.defaultProps = {
     title: "Data Matriks Nilai",
     totalPages: 1,
-    // onToggleFinalization: () => {},
 };
 
 export default MatrixTable;
