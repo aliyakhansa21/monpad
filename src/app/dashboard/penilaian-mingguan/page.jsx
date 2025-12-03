@@ -8,23 +8,35 @@ import ReviewModal from "@/components/organism/ReviewModal";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext"; 
 
-const extractUniqueProjects = (allGroups) => {
+const extractUniqueProjects = (allGroups, allProjectsDataRes) => {
+    const projectMap = new Map();
+    allProjectsDataRes.forEach(p => {
+        projectMap.set(p.id.toString(), p.nama_projek);
+    });
+
     const projects = [];
+    const uniqueProjectIds = new Set();
+
     allGroups.forEach((group) => {
-        if (group.project_id) {
+        const projectId = group.project_id?.toString();
+        if (projectId && !uniqueProjectIds.has(projectId)) {
+            const projectName = projectMap.get(projectId) || "Proyek Tidak Ditemukan";
+            
             projects.push({
-                id: group.project_id.toString(),
-                name: group.nama || `Kelompok #${group.id}`,
+                id: projectId,
+                name: projectName, 
                 group_name: group.nama || "Tidak ada kelompok",
             });
+            uniqueProjectIds.add(projectId);
         }
     });
     return projects;
 };
 
 export default function PenilaianMingguanPage() {
-    const { role } = useAuth();      
+    const { role, user } = useAuth(); 
     const userRole = role;           
+    const currentUserId = user?.id;
 
     const [penilaianData, setPenilaianData] = useState([]);
     const [gradeTypes, setGradeTypes] = useState([]);
@@ -49,15 +61,17 @@ export default function PenilaianMingguanPage() {
         setIsLoadingAssessment(true);
 
         try {
-            const [weeksRes, groupsRes, projectsRes] = await Promise.all([
+            const [weeksRes, groupsRes, projectsRes, weekTypesRes] = await Promise.all([
                 api.get("/week"),
                 api.get("/group"),
                 api.get("/project"),
+                api.get("/week-type"),
             ]);
 
             const allWeeksData = weeksRes.data.data || [];
             const allGroupsData = groupsRes.data.data || [];
             const allProjectsDataRes = projectsRes.data.data || [];
+            const allWeekTypes = weekTypesRes.data.data || [];
 
             const projectInfoMap = new Map();
 
@@ -78,7 +92,7 @@ export default function PenilaianMingguanPage() {
                 }
             });
 
-            const projectsForModal = extractUniqueProjects(allGroupsData);
+            const projectsForModal = extractUniqueProjects(allGroupsData, allProjectsDataRes);
             setAllProjectsData(projectsForModal);
 
             const combined = allWeeksData.map((week) => {
@@ -100,18 +114,10 @@ export default function PenilaianMingguanPage() {
             });
 
             setPenilaianData(combined);
+            
+            setWeekTypeList(allWeekTypes); 
 
-            const uniqueWeekTypes = Array.from(
-                new Map(
-                    combined
-                        .filter((w) => w.week_type)
-                        .map((w) => [w.week_type.id, w.week_type])
-                ).values()
-            );
-
-            setWeekTypeList(uniqueWeekTypes);
-
-            const options = uniqueWeekTypes.map((wt) => ({
+            const options = allWeekTypes.map((wt) => ({
                 value: wt.id.toString(),
                 label: wt.name,
             }));
@@ -204,6 +210,7 @@ export default function PenilaianMingguanPage() {
                         isLoadingMinggu || isLoadingAssessment
                     }
                     itemToEdit={selectedItem}
+                    graderId={currentUserId} 
                 />
             )}
 

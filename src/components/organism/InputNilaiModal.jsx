@@ -50,7 +50,8 @@ const InputNilaiModal = ({
     onSaveSuccess,
     projectsData, 
     isLoadingProjects,
-    itemToEdit 
+    itemToEdit,
+    graderId
 }) => {
     const [kelompokOptions, setKelompokOptions] = useState([]);
     const [projectOptions, setProjectOptions] = useState([]);
@@ -118,7 +119,7 @@ const InputNilaiModal = ({
             
             const pOptions = filteredProjects.map(p => ({ 
                 value: p.id.toString(), 
-                label: p.name || p.nama_projek || 'Proyek #' + p.id 
+                label: p.name 
             }));
             setProjectOptions(pOptions);
 
@@ -143,7 +144,7 @@ const InputNilaiModal = ({
         );
         const pOptions = filteredProjects.map(p => ({ 
             value: p.id.toString(), 
-            label: p.name || p.nama_projek || 'Proyek #' + p.id
+            label: p.name 
         }));
         setProjectOptions(pOptions);
         
@@ -174,6 +175,12 @@ const InputNilaiModal = ({
             return;
         }
 
+        // Cek jika graderId tidak ada
+        if (!graderId) {
+            setError("ID Asisten tidak ditemukan. Mohon login ulang atau hubungi admin.");
+            return;
+        }
+
         setIsSaving(true);
         setError(null);
 
@@ -182,6 +189,7 @@ const InputNilaiModal = ({
             notes: formData.notes || '',
             date: new Date().toISOString().split('T')[0], 
             project_id: parseInt(formData.project_id),
+            grader_id: graderId,
             grades: formData.grades.map(g => ({
                 grade_type_id: g.grade_type_id,
                 grade: g.grade,

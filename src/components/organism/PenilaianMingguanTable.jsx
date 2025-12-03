@@ -113,31 +113,9 @@ const PenilaianMingguanTable = ({
     
     const displayData = Array.isArray(data) ? data : [];
     
-    if (displayData.length === 0) {
-        return (
-            <div className="bg-white p-10 rounded-lg shadow text-center">
-                <div className="text-gray-400 mb-4">
-                    <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <p className="text-lg font-medium text-gray-600">
-                    Tidak ada data penilaian untuk minggu ini
-                </p>
-
-                {IS_ASSISTANT && (
-                    <p className="text-sm text-gray-500 mt-2">
-                        Klik tombol + untuk menambah penilaian baru
-                    </p>
-                )}
-            </div>
-        );
-    }
-
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
 
-            {/* Top toolbar */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">                 
                 <div className="flex-1"></div>
 
@@ -264,20 +242,40 @@ const PenilaianMingguanTable = ({
                                 )}
                             </tr>
                         ))}
+                        
+                        {displayData.length === 0 && (
+                            <tr>
+                                <td colSpan={staticColumns.length + dynamicHeaders.length + 3 + (IS_ASSISTANT ? 1 : 0) + (IS_LECTURER ? 1 : 0)} className="p-10 text-center">
+                                    <div className="text-gray-400 mb-4">
+                                        <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-lg font-medium text-gray-600">
+                                        Tidak ada data penilaian untuk minggu ini
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        Gunakan tombol + Tambah Nilai di atas untuk menambah penilaian baru.
+                                    </p>
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
 
-            <div className="mt-4 flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-                <span className="text-sm text-gray-700">
-                    Menampilkan {displayData.length} dari {displayData.length} entri
-                </span>
-                <Pagination
-                    totalPages={totalPages}
-                    currentPage={currentPage}
-                    onPageChange={onPageChange}
-                />
-            </div>
+            {displayData.length > 0 && (
+                <div className="mt-4 flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+                    <span className="text-sm text-gray-700">
+                        Menampilkan {displayData.length} dari {displayData.length} entri
+                    </span>
+                    <Pagination
+                        totalPages={totalPages}
+                        currentPage={currentPage}
+                        onPageChange={onPageChange}
+                    />
+                </div>
+            )}
         </div>
     );
 };
