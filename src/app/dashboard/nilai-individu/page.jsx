@@ -94,13 +94,15 @@ export default function NilaiIndividuPage() {
 
     const handleToggleFinalization = async (item) => {
         console.log("🔄 Toggle Finalization untuk:", item.username);
-        console.log("Current confirmed status:", item.confirmed);
-        console.log("Raw finalization data:", item._rawFinalization);
         
-        if (!item._rawFinalization) {
-            window.alert(`❌ Gagal finalisasi. Data nilai untuk ${item.username} belum tersedia di sistem. Pastikan penilaian sudah selesai.`);
+        const finalizationRecord = item._rawFinalization;
+
+        if (!finalizationRecord || !finalizationRecord.id) {
+            window.alert(`❌ Gagal finalisasi. Data nilai (ID Finalization) untuk ${item.username} belum tersedia. Pastikan penilaian sudah selesai.`);
             return;
         }
+
+        const finalizationId = finalizationRecord.id; 
 
         const isCurrentlyConfirmed = item.confirmed === 1;
         const actionText = isCurrentlyConfirmed ? 'membatalkan finalisasi' : 'memfinalisasi';
@@ -109,23 +111,11 @@ export default function NilaiIndividuPage() {
             return;
         }
         
-        try {
-            const finalizationResponse = await api.get('/finalization');
-            const allFinalizations = finalizationResponse.data.data || [];
+        try {           
+            const endpoint = `/finalization/${finalizationId}`;
+            console.log(`📡 Calling: POST ${endpoint} (Finalization ID: ${finalizationId})`);
             
-            const userFinalization = allFinalizations.find(f => f.user?.id === item.id);
-            
-            if (!userFinalization) {
-                window.alert(`❌ Data finalisasi tidak ditemukan untuk ${item.username}`);
-                return;
-            }
-
-            console.log("Found finalization for user:", userFinalization);
-            const endpoint = `/finalization/${item.id}`; 
-            
-            console.log(`📡 Calling: POST ${endpoint}`);
-            
-            const response = await api.post(endpoint, {});
+            const response = await api.post(endpoint, {}); 
             
             if (response.status === 200 || response.status === 201) {
                 console.log("✅ Success:", response.data);
@@ -144,7 +134,7 @@ export default function NilaiIndividuPage() {
                 errorMessage = error.response.data?.message || `Error ${error.response.status}: ${error.response.statusText}`;
                 
                 if (error.response.status === 404) {
-                    errorMessage = `❌ Endpoint tidak ditemukan. Backend perlu tambahkan logic untuk resolve finalization by user_id, atau API harus return 'id' field.`;
+                    errorMessage = `❌ Data Finalisasi dengan ID ${finalizationId} tidak ditemukan.`;
                 } else if (error.response.status === 405) {
                     errorMessage = `❌ Method tidak diizinkan. Pastikan endpoint POST /finalization/{id} aktif.`;
                 }

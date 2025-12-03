@@ -68,7 +68,6 @@ const NilaiIndividuTable = ({
     totalPages, 
     currentPage, 
     onPageChange,
-    title,
     isLoading
 }) => {
     const IS_LECTURER = userRole === 'dosen';
@@ -140,8 +139,8 @@ const NilaiIndividuTable = ({
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">
-                <span className="text-xl font-bold text-gray-800">{title}</span> 
+            <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-1 md:space-y-0">
+                <div className="flex-grow"></div> 
                 <div className="flex items-center space-x-2 md:space-x-4 md:w-auto w-full justify-end"> 
                     <SearchInput placeholder="Cari Mahasiswa" onChange={(e) => onSearch(e.target.value)} />
                 </div>
@@ -210,12 +209,11 @@ NilaiIndividuTable.propTypes = {
     totalPages: PropTypes.number,
     currentPage: PropTypes.number,
     onPageChange: PropTypes.func.isRequired,
-    title: PropTypes.string,
+    // title: PropTypes.string,
     isLoading: PropTypes.bool.isRequired,
 };
 
 NilaiIndividuTable.defaultProps = {
-    title: "Nilai Individu Mahasiswa",
     totalPages: 1,
     currentPage: 1,
 };
