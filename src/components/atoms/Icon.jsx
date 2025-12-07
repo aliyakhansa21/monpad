@@ -1,17 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { CircleArrowUp, Trash2, SquarePlus } from 'lucide-react';
+import { CircleArrowUp, Trash2, SquarePlus, user, Search } from 'lucide-react';
 
 const colorMap = {
     'red': '#BC0006',
     'green': '#176F2B',
     'primary': '#52357B',
+    'yellow': '#FFC107', 
+    'default': '#000000',
 };
 
 const LucideIconMap = {
     'edit-green': { component: CircleArrowUp, color: 'green' },
     'remove-red': { component: Trash2, color: 'red' },
     'filled-plus': { component: SquarePlus, color: 'primary' }, 
+    'search': { component: Search, color: 'primary' },
+    'group-member' : { component: user, color: 'yellow'},
 };
 
 const Icon = ({ name, size, className }) => {
@@ -23,14 +27,20 @@ const Icon = ({ name, size, className }) => {
     }
 
     const LucideComponent = iconData.component;
-    const iconColor = colorMap[iconData.color] || colorMap['default']; 
+    const iconColor = colorMap[iconData.color] || colorMap['default'] || 'currentColor'; 
 
     return (
-        <LucideComponent
-            size={size}
-            style={{ color: iconColor }} 
-            className={className} 
-        />
+        <>
+        {LucideComponent ? (
+            <LucideComponent
+                size={size}
+                style={{ color: iconColor }} 
+                className={className} 
+            />
+        ) : (
+            <div style={{ width: size, height: size, backgroundColor: 'red' }} /> 
+        )}
+    </>
     );
 };
 

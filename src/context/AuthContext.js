@@ -17,7 +17,6 @@ export function AuthProvider({ children }) {
 
     const [isLoading, setIsLoading] = useState(true);
 
-    // restore session dari localStorage
     useEffect(() => {
         const savedUser = localStorage.getItem("user");
         const savedToken = localStorage.getItem("token");
@@ -34,7 +33,6 @@ export function AuthProvider({ children }) {
         setIsLoading(false);
     }, []);
 
-    // auto logout jika 401
     useEffect(() => {
         const interceptor = api.interceptors.response.use(
             (res) => res,
@@ -49,14 +47,12 @@ export function AuthProvider({ children }) {
         return () => api.interceptors.response.eject(interceptor);
     }, []);
 
-    // login
     const login = async (credentials) => {
         try {
             const res = await apiAuth.post("/login", credentials);
 
             const { user, token, role } = res.data.data;
 
-            // simpan state global
             const newAuth = { user, token, role };
             setAuth(newAuth);
 
@@ -79,6 +75,11 @@ export function AuthProvider({ children }) {
         }
     };
 
+    // login with Google 
+    const loginWithGoogle = () => {
+        window.location.href = 'http://127.0.0.1:8000/api/auth/google';
+    };
+
     // logout
     const logout = (redirect = true) => {
         setAuth({ user: null, token: null, role: null });
@@ -87,7 +88,6 @@ export function AuthProvider({ children }) {
         if (redirect) router.push("/login");
     };
 
-    // value yang dipake dihalaman lain
     const value = useMemo(
         () => ({
             user: auth.user,
@@ -95,12 +95,13 @@ export function AuthProvider({ children }) {
             role: auth.role,
             isLoggedIn: !!auth.token,
             login,
+            loginWithGoogle,
             logout,
+            setAuth, 
         }),
         [auth]
     );
 
-    // loader
     if (isLoading) {
         return (
             <div className="flex flex-col justify-center items-center min-h-screen">
