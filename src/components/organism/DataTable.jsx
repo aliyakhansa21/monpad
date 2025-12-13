@@ -103,33 +103,41 @@ const DataTable = ({
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">
-                {/* Export & Import buttons */}
-                <div className="flex items-center space-x-2">
-                    <Button 
-                        onClick={onExport} 
-                        variant="primary"
-                        className="px-4 py-2 bg-background-dark text-white rounded hover:bg-background-dark transition-colors"
-                    >
-                        Export Template
-                    </Button>
-                    <Button 
-                        onClick={handleImportClick} 
-                        variant="primary"
-                        className="px-4 py-2 bg-background-dark text-white rounded hover:bg-background-dark transition-colors"
-                    >
-                        Import Data
-                    </Button>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        onChange={handleFileChange}
-                        className="hidden"
-                    />
-                </div>
+                {/* Export & Import buttons (conditional) */}
+                {(onExport || onImport) && (
+                    <div className="flex items-center space-x-2">
+                        {onExport && (
+                            <Button 
+                                onClick={onExport} 
+                                variant="primary"
+                                className="px-4 py-2 bg-background-dark text-white rounded hover:bg-background-dark transition-colors"
+                            >
+                                Export Template
+                            </Button>
+                        )}
+                        {onImport && (
+                            <>
+                                <Button 
+                                    onClick={handleImportClick} 
+                                    variant="primary"
+                                    className="px-4 py-2 bg-background-dark text-white rounded hover:bg-background-dark transition-colors"
+                                >
+                                    Import Data
+                                </Button>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".xlsx,.xls,.csv"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+                            </>
+                        )}
+                    </div>
+                )}
 
                 {/* Add & Search */}
-                <div className="flex items-center space-x-2 md:space-x-4 md:w-auto"> 
+                <div className={`flex items-center space-x-2 md:space-x-4 md:w-auto ${!(onExport || onImport) ? 'ml-auto' : ''}`}> 
                     <Button 
                         onClick={onAdd} 
                         variant="icon-only-2" 
