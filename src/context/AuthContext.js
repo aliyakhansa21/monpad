@@ -56,12 +56,10 @@ export function AuthProvider({ children }) {
             const newAuth = { user, token, role };
             setAuth(newAuth);
 
-            // simpan ke localStorage
             localStorage.setItem("user", JSON.stringify(user));
             localStorage.setItem("token", token);
             localStorage.setItem("role", role);
 
-            // redirect berdasar role
             const redirect = {
                 dosen: "/dashboard/dosen",
                 mahasiswa: "/dashboard/mahasiswa",
@@ -75,9 +73,29 @@ export function AuthProvider({ children }) {
         }
     };
 
-    // login with Google 
     const loginWithGoogle = () => {
-        window.location.href = 'http://127.0.0.1:8000/api/auth/google';
+        window.location.href = 'https://simpad.novarentech.web.id/auth/google';
+    };
+
+    const handleGoogleCallback = ({ user, token, role }) => {
+        const newAuth = { user, token, role };
+        
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+        
+        console.log("AuthContext: Data tersimpan di localStorage. Melakukan setAuth...");
+        setAuth(newAuth); 
+        
+        const redirect = {
+            dosen: "/dashboard/dosen",
+            mahasiswa: "/dashboard/mahasiswa",
+            asisten: "/dashboard/asisten",
+        }[role] || "/dashboard";
+
+        console.log(`AuthContext: Redirecting ke ${redirect}`);
+        // router.replace(redirect); 
+        window.location.replace(redirect);
     };
 
     // logout
@@ -98,6 +116,7 @@ export function AuthProvider({ children }) {
             loginWithGoogle,
             logout,
             setAuth, 
+            handleGoogleCallback,
         }),
         [auth]
     );

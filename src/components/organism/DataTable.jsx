@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import SearchInput from '@/components/molecules/SearchInput';
 import Button from '@/components/atoms/Button';
@@ -19,8 +19,24 @@ const DataTable = ({
     onPageChange, 
     onEdit, 
     onDelete, 
-    isLoading 
+    isLoading,
+    onExport,
+    onImport 
 }) => {
+    const fileInputRef = useRef(null);
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            onImport(file);
+            e.target.value = ''; // Reset input
+        }
+    };
+
     const renderCell = (item, column) => {
         if (column.render) {
             const renderedContent = column.render(item);
@@ -86,7 +102,33 @@ const DataTable = ({
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-            <div className="flex flex-col md:flex-row justify-end items-center mb-4 space-y-2 md:space-y-0"> 
+            <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-2 md:space-y-0">
+                {/* Export & Import buttons */}
+                <div className="flex items-center space-x-2">
+                    <Button 
+                        onClick={onExport} 
+                        variant="primary"
+                        className="px-4 py-2 bg-background-dark text-white rounded hover:bg-background-dark transition-colors"
+                    >
+                        Export Template
+                    </Button>
+                    <Button 
+                        onClick={handleImportClick} 
+                        variant="primary"
+                        className="px-4 py-2 bg-background-dark text-white rounded hover:bg-background-dark transition-colors"
+                    >
+                        Import Data
+                    </Button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+                </div>
+
+                {/* Add & Search */}
                 <div className="flex items-center space-x-2 md:space-x-4 md:w-auto"> 
                     <Button 
                         onClick={onAdd} 
@@ -170,6 +212,8 @@ DataTable.propTypes = {
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
+    onExport: PropTypes.func,
+    onImport: PropTypes.func,
 };
 
 DataTable.defaultProps = {

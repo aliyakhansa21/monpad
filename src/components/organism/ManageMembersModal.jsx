@@ -133,12 +133,12 @@ const ManageMembersModal = ({ isOpen, onClose, groupToManage, onSaveSuccess }) =
             });
 
             if (res.status === 200 || res.status === 201) {
-                alert(`✅ Anggota kelompok "${groupToManage.nama}" berhasil diperbarui!\n\nTotal anggota: ${userIdsToSync.length} mahasiswa`);
+                alert(`Anggota kelompok "${groupToManage.nama}" berhasil diperbarui!\n\nTotal anggota: ${userIdsToSync.length} mahasiswa`);
                 if (onSaveSuccess) await onSaveSuccess();
             }
         } catch (error) {
             console.error("Gagal menyimpan:", error.response || error);
-            alert(`❌ Gagal menyimpan: ${error.response?.data?.message || error.message}`);
+            alert(`Gagal menyimpan: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsSaving(false);
         }
@@ -210,7 +210,7 @@ const ManageMembersModal = ({ isOpen, onClose, groupToManage, onSaveSuccess }) =
                                     </span>
                                 </h3>
                                 <Input
-                                    placeholder="🔍 Cari Nama atau NIM..."
+                                    placeholder="Cari Nama atau NIM..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="text-sm h-9"

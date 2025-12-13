@@ -19,20 +19,25 @@ export default function DashboardLayout({ children }) {
     const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(true);
     const toggleSidebar = () => { setIsSidebarExpanded(prev => !prev); };
 
-    const currentUserName = user?.name || 'Pengguna';
+    const currentUserName = user?.username || 'Pengguna';
     const currentUserRoleTitle = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Loading'; 
 
     React.useEffect(() => {
-        if (!isLoading && !isLoggedIn) {
-            router.push('/login');
+        if (!isLoading) {
+            
+            if (!isLoggedIn) {
+                console.log("Dashboard Guard: User tidak login, redirect ke /login");
+                router.replace('/login'); 
+                return; 
+            }
+            
+            if (isLoggedIn && user && role && window.location.pathname === '/dashboard') {
+                router.replace(`/dashboard/${role}`);
+            }
         }
-        if (!isLoading && isLoggedIn && user && role && window.location.pathname === '/dashboard') {
-            router.push(`/dashboard/${role}`);
-        }
-
-    }, [isLoading, isLoggedIn, router, user, role]);
+    }, [isLoading, isLoggedIn, router, user, role]);
     
-    if (isLoading || !isLoggedIn) {
+    if (isLoading || !isLoggedIn || !user || !role) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-50">
                 <p>Memuat sesi atau mengarahkan ke halaman login...</p>
@@ -75,7 +80,6 @@ export default function DashboardLayout({ children }) {
                                 : 'md:ml-[72px]'   // Sidebar tertutup
                             } ml-0`}>
                 
-                {/* Overlay untuk mobile saat sidebar terbuka */}
                 {isSidebarExpanded && (
                     <div 
                         className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"

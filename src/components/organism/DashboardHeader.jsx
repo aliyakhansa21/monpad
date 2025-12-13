@@ -5,9 +5,6 @@ import Button from '../atoms/Button';
 
 const DashboardHeader = ({ title }) => {
     return (
-        // 1. Hapus p-4 md:p- (padding horizontal statis)
-        // Ganti dengan px-4 md:px-6 (padding horizontal yang lebih terdefinisi)
-        // Biarkan padding vertikal (py-4) jika diperlukan, tapi hilangkan padding total yang besar.
         <header className='
         sticky top-0 z-40
         transition-all duration-300
@@ -15,7 +12,7 @@ const DashboardHeader = ({ title }) => {
             <div className="
             flex flex-col md:flex-row items-start md:items-center justify-between
             bg-white rounded-lg shadow
-            p-4 md:p-6 w-full"> {/* Ganti p-6 md:p-6 menjadi p-4 md:p-6 untuk responsivitas padding internal */}
+            p-4 md:p-6 w-full"> 
                 <div className='flex flex-col'>
                     <h1 className='text-xl md:text-3xl font-bold text-primary leading-tight'>{title}</h1>
                 </div>

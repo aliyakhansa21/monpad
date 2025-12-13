@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { CircleArrowUp, Trash2, SquarePlus, user, Search } from 'lucide-react';
+import { CircleArrowUp, Trash2, SquarePlus, User, Search, Bell } from 'lucide-react';
+import { components } from 'react-select';
 
 const colorMap = {
     'red': '#BC0006',
@@ -15,7 +16,9 @@ const LucideIconMap = {
     'remove-red': { component: Trash2, color: 'red' },
     'filled-plus': { component: SquarePlus, color: 'primary' }, 
     'search': { component: Search, color: 'primary' },
-    'group-member' : { component: user, color: 'yellow'},
+    'group-member' : { component: User, color: 'yellow'},
+    'notification' : { component: Bell, color: 'primary'},
+    'profile' : {components: User, color: 'primary'},
 };
 
 const Icon = ({ name, size, className }) => {
