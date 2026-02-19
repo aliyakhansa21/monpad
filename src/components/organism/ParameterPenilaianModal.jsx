@@ -129,84 +129,31 @@ const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Validasi bobot aspek
         if (bobotAspekAkumulasi !== 100) {
             alert(`Total bobot semua aspek harus mencapai 100%. Saat ini: ${bobotAspekAkumulasi}%.`);
             return;
         }
-
-        // Validasi total bobot mingguan
-        if (newTotalWeight > 100) {
-            alert(`Gagal! Total bobot mingguan melebihi 100%.`);
-            return;
-        }
-
-        // Validasi bobot minggu
-        if (bobotMinggu <= 0) {
-            alert('Bobot minggu harus lebih dari 0%.');
-            return;
-        }
-
-        // Validasi minggu dipilih
-        if (!minggu) {
-            alert('Minggu ke- harus dipilih.');
-            return;
-        }
-
-        // Ambil token di awal dan validasi
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            alert("Sesi tidak ditemukan. Mohon login ulang.");
-            window.location.href = '/login'; 
+        if (newTotalWeight > 100 || bobotMinggu <= 0 || !minggu) {
+            alert('Pastikan semua input valid.');
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            //Config header yang reusable
-            const authConfig = {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                }
-            };
-
             const aspekWithId = [];
             
             for (const aspek of aspekList) {
                 if (aspek.id) {
-                    // Jika sudah punya ID (re-use), langsung tambahkan
                     aspekWithId.push(aspek);
-                } else {
-                    // POST Aspek baru ke /grade-type
-                    try {
-                        const res = await api.post('/grade-type', {
-                            name: aspek.name,
-                            percentage: aspek.percentage,
-                        }, authConfig); 
-                        
-                        const newAspekId = res.data.data.id;
-                        aspekWithId.push({ ...aspek, id: newAspekId });
-                        
-                        console.log(`✅ Aspek "${aspek.name}" berhasil disimpan dengan ID: ${newAspekId}`);
-                    } catch (error) {
-                        const status = error.response?.status || 'Network Error';
-                        const message = error.response?.data?.message || error.message;
-                        
-                        console.error(`❌ Gagal menyimpan aspek "${aspek.name}":`, error);
-                        
-                        if (status === 401) {
-                            alert(`Sesi Anda telah berakhir. Mohon login kembali.`);
-                            localStorage.removeItem('authToken');
-                            window.location.href = '/login';
-                        } else {
-                            alert(`Gagal menyimpan aspek "${aspek.name}". Status: ${status}. Pesan: ${message}`);
-                        }
-                        
-                        setIsSubmitting(false);
-                        return;
-                    }
+                } else {        
+                    const res = await api.post('/grade-type', {
+                        name: aspek.name,
+                        percentage: aspek.percentage,
+                    }); 
+                    
+                    const newAspekId = res.data.data.id;
+                    aspekWithId.push({ ...aspek, id: newAspekId });
                 }
             }
             
@@ -216,27 +163,18 @@ const ParameterPenilaianModal = ({ isOpen, onClose, onSubmit, existingGradeTypes
                 grade_types: aspekWithId.map(a => a.id), 
             };
             
-            console.log('📤 Mengirim payload week-type:', payload);            
             await onSubmit(payload);
-            
-            setMinggu(null);
-            setAspekList([]);
-            setBobotMinggu(0);
-            setNewAspekInput({ name: '', percentage: 0, id: null });
             onClose();
 
         } catch (error) {
-            console.error('❌ Error saat menyimpan parameter:', error);
-            
-            const status = error.response?.status || 'Error';
-            const message = error.response?.data?.message || error.message;
+            console.error('Error:', error);
+            const status = error.response?.status;
             
             if (status === 401) {
-                alert(`Sesi Anda telah berakhir. Mohon login kembali.`);
-                localStorage.removeItem('authToken');
+                alert("Sesi Anda berakhir. Silakan login kembali.");
                 window.location.href = '/login';
             } else {
-                alert(`Gagal menyimpan parameter penilaian. Status: ${status}. Pesan: ${message}`);
+                alert("Terjadi kesalahan saat menyimpan data.");
             }
         } finally {
             setIsSubmitting(false);
